@@ -20,32 +20,53 @@
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Products">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             @if (User.IsInRole("Owner"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Dashboard" asp-action="Owner">Owner Dashboard</a>
+                                    <a class="nav-link" asp-controller="Operations" asp-action="Dashboard">Owner Dashboard</a>
                                 </li>
                             }
                             @if (User.IsInRole("Worker"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Dashboard" asp-action="Worker">Worker Dashboard</a>
+                                    <a class="nav-link" asp-controller="Operations" asp-action="Dashboard">Worker Dashboard</a>
                                 </li>
                             }
                             @if (User.IsInRole("Client"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Dashboard" asp-action="Client">Client Dashboard</a>
+                                    <a class="nav-link" asp-controller="Client" asp-action="MyOrders">My Orders</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Client" asp-action="NewOrder">New Order</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Client" asp-action="Profile">Profile</a>
                                 </li>
                             }
                             @if (User.IsInRole("Owner") || User.IsInRole("Worker"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Flavors" asp-action="Index">Admin Flavors</a>
+                                    <a class="nav-link" asp-controller="Operations" asp-action="Inventory">Inventory</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Operations" asp-action="Orders">Orders</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Operations" asp-action="Production">Production</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Operations" asp-action="DailyInventoryReport">Daily Report</a>
                                 </li>
                             }
                             <li class="nav-item">
@@ -57,7 +78,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                                <a class="nav-link" asp-controller="Home" asp-action="LoginRegister">Login/Register</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>

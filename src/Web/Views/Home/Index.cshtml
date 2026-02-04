@@ -1,0 +1,34 @@
+@model IReadOnlyList<IceCreamM12.Domain.Entities.IceCreamFlavor>
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center mb-4">
+    <h1 class="display-5">Welcome to IceCreamM12</h1>
+    <p class="lead">Browse today's flavors curated by our kitchen team.</p>
+</div>
+
+<div class="row g-3">
+    @foreach (var flavor in Model)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@flavor.Name</h5>
+                    <p class="card-text">
+                        Price: <strong>@flavor.Price.ToString("C")</strong>
+                    </p>
+                    @if (flavor.IsSeasonal)
+                    {
+                        <span class="badge bg-warning text-dark">Seasonal</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Classic</span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

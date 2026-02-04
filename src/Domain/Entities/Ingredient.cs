@@ -19,5 +19,13 @@ public class Ingredient
     [Column(TypeName = "decimal(10,2)")]
     public decimal CostPerUnit { get; set; }
 
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal QuantityOnHand { get; set; }
+
+    [Column(TypeName = "decimal(10,2)")]
+    public decimal ReorderLevel { get; set; }
+
+    public DateTime LastUpdatedAt { get; set; }
+
     public ICollection<RecipeItem> RecipeItems { get; set; } = new List<RecipeItem>();
 }

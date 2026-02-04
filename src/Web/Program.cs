@@ -28,6 +28,11 @@ builder.Services
 
 builder.Services.AddScoped<IFlavorRepository, FlavorRepository>();
 builder.Services.AddScoped<IFlavorService, FlavorService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductionService, ProductionService>();
 
 var app = builder.Build();
 

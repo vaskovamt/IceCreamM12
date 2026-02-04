@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IceCreamM12.Web.Controllers;
 
+[Authorize(Roles = "Owner,Worker,Client")]
 public class HomeController : Controller
 {
     private readonly IFlavorService _flavorService;
@@ -14,17 +16,20 @@ public class HomeController : Controller
         _flavorService = flavorService;
     }
 
+    [AllowAnonymous]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var flavors = await _flavorService.GetAvailableFlavorsAsync(cancellationToken);
         return View(flavors);
     }
 
+    [AllowAnonymous]
     public IActionResult Privacy()
     {
         return View();
     }
 
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

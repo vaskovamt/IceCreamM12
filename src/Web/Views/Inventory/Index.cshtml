@@ -1,0 +1,46 @@
+@{
+    ViewData["Title"] = "Inventory";
+}
+
+<h1>Inventory Operations</h1>
+
+<section>
+    <h2>Load Inventory</h2>
+    <form asp-action="Load" method="post">
+        <label>Product Id</label>
+        <input type="number" name="ProductId" />
+        <label>Quantity</label>
+        <input type="number" name="Quantity" />
+        <label>Reason</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Load</button>
+    </form>
+</section>
+
+<section>
+    <h2>Scrap Inventory</h2>
+    <form asp-action="Scrap" method="post">
+        <label>Product Id</label>
+        <input type="number" name="ProductId" />
+        <label>Quantity</label>
+        <input type="number" name="Quantity" />
+        <label>Reason</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Scrap</button>
+    </form>
+</section>
+
+<section>
+    <h2>Swap Inventory</h2>
+    <form asp-action="Swap" method="post">
+        <label>From Product Id</label>
+        <input type="number" name="FromProductId" />
+        <label>To Product Id</label>
+        <input type="number" name="ToProductId" />
+        <label>Quantity</label>
+        <input type="number" name="Quantity" />
+        <label>Reason</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Swap</button>
+    </form>
+</section>

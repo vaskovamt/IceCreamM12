@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h1>Product Operations</h1>
+
+<section>
+    <h2>Scrap Product</h2>
+    <form asp-action="Scrap" method="post">
+        <label>Product Id</label>
+        <input type="number" name="ProductId" />
+        <label>Quantity</label>
+        <input type="number" name="Quantity" />
+        <label>Reason</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Scrap</button>
+    </form>
+</section>
+
+<section>
+    <h2>Replace Product</h2>
+    <form asp-action="Replace" method="post">
+        <label>Original Product Id</label>
+        <input type="number" name="OriginalProductId" />
+        <label>Replacement Product Id</label>
+        <input type="number" name="ReplacementProductId" />
+        <label>Quantity</label>
+        <input type="number" name="Quantity" />
+        <label>Reason</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Replace</button>
+    </form>
+</section>

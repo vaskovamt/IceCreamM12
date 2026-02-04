@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<h1>Order Decisions</h1>
+
+<section>
+    <h2>Approve Order</h2>
+    <form asp-action="Approve" method="post">
+        <label>Order Id</label>
+        <input type="number" name="OrderId" />
+        <button type="submit">Approve</button>
+    </form>
+</section>
+
+<section>
+    <h2>Reject Order</h2>
+    <form asp-action="Reject" method="post">
+        <label>Order Id</label>
+        <input type="number" name="OrderId" />
+        <label>Rejection Reason</label>
+        <input type="text" name="RejectionReason" />
+        <button type="submit">Reject</button>
+    </form>
+</section>

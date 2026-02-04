@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Owner Admin";
+}
+
+<h1>Owner Administration</h1>
+
+<section>
+    <h2>Record Inventory Change</h2>
+    <form asp-action="RecordInventoryChange" method="post">
+        <label>Product Id</label>
+        <input type="number" name="ProductId" />
+        <label>Quantity</label>
+        <input type="number" name="Quantity" />
+        <label>Reason</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Record Change</button>
+    </form>
+</section>

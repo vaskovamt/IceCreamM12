@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Infra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "src\Web\Web.csproj", "{B5BE96EC-66C3-4B8A-9C1C-8739227D4F7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IceCreamM12.Tests", "tests\IceCreamM12.Tests\IceCreamM12.Tests.csproj", "{C8AE59BF-2D5B-4BDA-8055-A8155DE085DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,5 +34,9 @@ Global
 		{B5BE96EC-66C3-4B8A-9C1C-8739227D4F7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5BE96EC-66C3-4B8A-9C1C-8739227D4F7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5BE96EC-66C3-4B8A-9C1C-8739227D4F7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8AE59BF-2D5B-4BDA-8055-A8155DE085DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AE59BF-2D5B-4BDA-8055-A8155DE085DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8AE59BF-2D5B-4BDA-8055-A8155DE085DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8AE59BF-2D5B-4BDA-8055-A8155DE085DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

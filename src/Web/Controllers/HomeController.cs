@@ -30,6 +30,30 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
+    public IActionResult About()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    public IActionResult Products()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    public IActionResult Contact()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    public IActionResult LoginRegister()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

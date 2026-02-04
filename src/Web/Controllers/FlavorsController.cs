@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IceCreamM12.Web.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Owner,Worker")]
 public class FlavorsController : Controller
 {
     private readonly IFlavorService _flavorService;

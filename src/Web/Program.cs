@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -24,6 +25,7 @@ builder.Services
         options.Password.RequiredLength = 8;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultUI()
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IFlavorRepository, FlavorRepository>();
@@ -53,6 +55,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
 using (IServiceScope scope = app.Services.CreateScope())
 {

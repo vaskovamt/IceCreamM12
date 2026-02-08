@@ -1,5 +1,6 @@
 using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Domain.Entities;
+using IceCreamM12.Domain.Interfaces;
 
 namespace IceCreamM12.Application.Services;
 

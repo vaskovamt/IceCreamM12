@@ -16,3 +16,5 @@ C:\Users\PC\IceCreamM12\src\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
 C:\Users\PC\IceCreamM12\src\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
 C:\Users\PC\IceCreamM12\src\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
 C:\Users\PC\IceCreamM12\src\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+C:\Users\PC\IceCreamM12\src\Infrastructure\bin\Debug\net8.0\Infrastructure.runtimeconfig.json
+C:\Users\PC\IceCreamM12\src\Infrastructure\obj\Debug\net8.0\Infrastructure.genruntimeconfig.cache

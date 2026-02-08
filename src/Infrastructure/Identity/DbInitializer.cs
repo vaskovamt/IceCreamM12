@@ -73,7 +73,8 @@ public static class DbInitializer
 
             List<Product> products = new();
 
-            products.AddRange(
+            products.AddRange(new[]
+            {
                 new Product
                 {
                     Name = "Classic Vanilla Scoop",
@@ -95,7 +96,7 @@ public static class DbInitializer
                     Price = 4.75m,
                     CategoryId = categories["Cones"].Id
                 }
-            );
+            });
 
             string[] randomFlavors =
             [

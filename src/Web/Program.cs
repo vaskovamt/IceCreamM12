@@ -1,6 +1,7 @@
 using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Application.Services;
 using IceCreamM12.Domain.Identity;
+using IceCreamM12.Domain.Interfaces;
 using IceCreamM12.Infrastructure.Data;
 using IceCreamM12.Infrastructure.Identity;
 using IceCreamM12.Infrastructure.Repositories;

@@ -1,5 +1,5 @@
-using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Domain.Entities;
+using IceCreamM12.Domain.Interfaces;
 using IceCreamM12.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 

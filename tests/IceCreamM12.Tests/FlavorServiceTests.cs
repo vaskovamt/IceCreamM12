@@ -1,6 +1,6 @@
-using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Application.Services;
 using IceCreamM12.Domain.Entities;
+using IceCreamM12.Domain.Interfaces;
 using Xunit;
 
 namespace IceCreamM12.Tests;

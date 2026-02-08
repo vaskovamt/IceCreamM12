@@ -4,6 +4,7 @@ using IceCreamM12.Domain.Identity;
 using IceCreamM12.Infrastructure.Data;
 using IceCreamM12.Infrastructure.Identity;
 using IceCreamM12.Infrastructure.Repositories;
+using IceCreamM12.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,8 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+var dbPath = Path.Combine(builder.Environment.ContentRootPath, "app.db");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
+
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>

@@ -260,6 +260,17 @@ public static class DbInitializer
                 throw new InvalidOperationException($"Failed to create user '{email}': {errors}");
             }
         }
+        else if (!await userManager.CheckPasswordAsync(user, password))
+        {
+            string resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            IdentityResult resetResult = await userManager.ResetPasswordAsync(user, resetToken, password);
+            if (!resetResult.Succeeded)
+            {
+                string errors = string.Join(", ",
+                    resetResult.Errors.Select(error => error.Description));
+                throw new InvalidOperationException($"Failed to reset password for '{email}': {errors}");
+            }
+        }
 
         if (!await userManager.IsInRoleAsync(user, role))
         {

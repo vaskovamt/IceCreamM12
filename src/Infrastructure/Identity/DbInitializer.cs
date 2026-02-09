@@ -15,7 +15,14 @@ public static class DbInitializer
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration)
     {
-        await context.Database.MigrateAsync();
+        if ((await context.Database.GetMigrationsAsync()).Any())
+        {
+            await context.Database.MigrateAsync();
+        }
+        else
+        {
+            await context.Database.EnsureCreatedAsync();
+        }
 
         string[] roles = ["Owner", "Worker", "Client"];
 

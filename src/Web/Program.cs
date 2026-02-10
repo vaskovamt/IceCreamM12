@@ -9,7 +9,11 @@ using IceCreamM12.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = ResolveContentRootPath()
+});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -71,3 +75,20 @@ using (IServiceScope scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+static string ResolveContentRootPath()
+{
+    DirectoryInfo? directory = new(AppContext.BaseDirectory);
+
+    while (directory is not null)
+    {
+        if (File.Exists(Path.Combine(directory.FullName, "Web.csproj")))
+        {
+            return directory.FullName;
+        }
+
+        directory = directory.Parent;
+    }
+
+    return Directory.GetCurrentDirectory();
+}

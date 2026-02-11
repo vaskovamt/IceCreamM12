@@ -15,7 +15,8 @@ public static class DbInitializer
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration)
     {
-        if ((await context.Database.GetMigrationsAsync()).Any())
+        IEnumerable<string> pending = await context.Database.GetPendingMigrationsAsync();
+        if (pending.Any())
         {
             await context.Database.MigrateAsync();
         }

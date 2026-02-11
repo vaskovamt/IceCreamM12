@@ -52,7 +52,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+var httpsPort = builder.Configuration.GetValue<int?>("ASPNETCORE_HTTPS_PORT")
+    ?? builder.Configuration.GetValue<int?>("HTTPS_PORT");
+
+if (httpsPort.HasValue)
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 
 app.UseRouting();

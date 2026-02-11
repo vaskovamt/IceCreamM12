@@ -13,6 +13,42 @@
 </section>
 
 <section class="mt-4">
+    <h2>Demo seeded accounts</h2>
+    <p>If you want to test different portals, sign in with one of the seeded users below:</p>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Owner</td>
+                    <td><code>owner@icecreamm12.local</code></td>
+                    <td><code>Owner123!</code></td>
+                </tr>
+                <tr>
+                    <td>Worker</td>
+                    <td><code>worker@icecreamm12.local</code></td>
+                    <td><code>Worker123!</code></td>
+                </tr>
+                <tr>
+                    <td>Client</td>
+                    <td><code>client@icecreamm12.local</code></td>
+                    <td><code>Client123!</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="mb-0">
+        If login does not work, remove <code>src/Web/app.db</code> and restart the app so the seed process can recreate users.
+    </p>
+</section>
+
+<section class="mt-4">
     <h2>Register</h2>
     <p>Create a new account to place orders and track fulfillment.</p>
     <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Register">Create an Account</a>

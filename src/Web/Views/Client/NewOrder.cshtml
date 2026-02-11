@@ -1,3 +1,5 @@
+@model IceCreamM12.Web.Models.ClientOrderRequest
+
 @{
     ViewData["Title"] = "New Order";
 }
@@ -6,17 +8,39 @@
 
 <p>Create a new order request for ice cream products.</p>
 
-<section>
-    <h2>Order checklist</h2>
-    <ol>
-        <li>Select flavors and quantities.</li>
-        <li>Choose preferred delivery date and time window.</li>
-        <li>Add special handling notes (allergens, packaging).</li>
-        <li>Submit the request for confirmation.</li>
-    </ol>
-</section>
+<form asp-action="NewOrder" method="post" class="mt-4">
+    @Html.AntiForgeryToken()
 
-<section>
-    <h2>Need help?</h2>
-    <p>Contact support if you need guidance on bulk orders or custom flavors.</p>
-</section>
+    <div class="mb-3">
+        <label asp-for="ProductId" class="form-label"></label>
+        <select asp-for="ProductId" asp-items="ViewBag.ProductOptions" class="form-select">
+            <option value="">Select product...</option>
+        </select>
+        <span asp-validation-for="ProductId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Quantity" class="form-label"></label>
+        <input asp-for="Quantity" class="form-control" min="1" max="100" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CustomerName" class="form-label"></label>
+        <input asp-for="CustomerName" class="form-control" />
+        <span asp-validation-for="CustomerName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CustomerEmail" class="form-label"></label>
+        <input asp-for="CustomerEmail" class="form-control" />
+        <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit order</button>
+    <a asp-action="MyOrders" class="btn btn-outline-secondary ms-2">View my orders</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

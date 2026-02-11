@@ -7,6 +7,7 @@ namespace IceCreamM12.Infrastructure.Services;
 
 public class InventoryService : IInventoryService
 {
+    private const string DefaultAuditReason = "Няма причина";
     private readonly ApplicationDbContext _dbContext;
     private readonly IAuditService _auditService;
 
@@ -58,10 +59,12 @@ public class InventoryService : IInventoryService
             inventoryItem.LastUpdatedAt = DateTime.UtcNow;
         }
 
+        var auditReason = NormalizeReason(reason);
+
         await _auditService.RecordInventoryChangeAsync(
             inventoryItem,
             quantity,
-            reason,
+            auditReason,
             performedByUserId,
             cancellationToken);
 
@@ -97,10 +100,12 @@ public class InventoryService : IInventoryService
         inventoryItem.QuantityOnHand -= quantity;
         inventoryItem.LastUpdatedAt = DateTime.UtcNow;
 
+        var auditReason = NormalizeReason(reason);
+
         await _auditService.RecordInventoryChangeAsync(
             inventoryItem,
             -quantity,
-            reason,
+            auditReason,
             performedByUserId,
             cancellationToken);
 
@@ -162,20 +167,29 @@ public class InventoryService : IInventoryService
         toItem.QuantityOnHand += quantity;
         toItem.LastUpdatedAt = DateTime.UtcNow;
 
+        var auditReason = NormalizeReason(reason);
+
         await _auditService.RecordInventoryChangeAsync(
             fromItem,
             -quantity,
-            reason,
+            auditReason,
             performedByUserId,
             cancellationToken);
 
         await _auditService.RecordInventoryChangeAsync(
             toItem,
             quantity,
-            reason,
+            auditReason,
             performedByUserId,
             cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static string NormalizeReason(string? reason)
+    {
+        return string.IsNullOrWhiteSpace(reason)
+            ? DefaultAuditReason
+            : reason.Trim();
     }
 }

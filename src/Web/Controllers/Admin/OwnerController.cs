@@ -1,48 +1,319 @@
 using System.Security.Claims;
 using IceCreamM12.Application.Interfaces;
-using IceCreamM12.Web.Models;
+using IceCreamM12.Domain.Entities;
+using IceCreamM12.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace IceCreamM12.Web.Controllers.Admin;
 
 [Authorize(Roles = "Owner")]
-[Route("Admin/[controller]/[action]")]
+[Route("Owner/[action]/{id?}")]
 public class OwnerController : Controller
 {
-    private readonly IAuditService _auditService;
+    private readonly IManagementService _managementService;
     private readonly IInventoryService _inventoryService;
+    private readonly IOrderService _orderService;
 
-    public OwnerController(IAuditService auditService, IInventoryService inventoryService)
+    public OwnerController(IManagementService managementService, IInventoryService inventoryService, IOrderService orderService)
     {
-        _auditService = auditService;
+        _managementService = managementService;
         _inventoryService = inventoryService;
+        _orderService = orderService;
     }
 
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Dashboard(CancellationToken cancellationToken)
+        => View(new OwnerDashboardViewModel { Data = await _managementService.GetOwnerDashboardAsync(cancellationToken) });
+
+    [HttpGet]
+    public async Task<IActionResult> Orders(string? status, CancellationToken cancellationToken)
+        => View(new OrdersManagementViewModel
+        {
+            StatusFilter = status,
+            Orders = await _managementService.GetOrdersAsync(status, cancellationToken)
+        });
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveOrder(int orderId, CancellationToken cancellationToken)
     {
-        return View("~/Views/Admin/Owner/Index.cshtml");
+        await ExecuteWithTempDataAsync(async () =>
+            await _orderService.ApproveOrderAsync(orderId, User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+
+        return RedirectToAction(nameof(Orders));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> RecordInventoryChange(InventoryLoadRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RejectOrder(int orderId, string rejectionReason, CancellationToken cancellationToken)
     {
-        var item = await _inventoryService.LoadInventoryAsync(
-            request.ProductId,
-            request.Quantity,
-            request.Reason,
-            User.FindFirstValue(ClaimTypes.NameIdentifier),
-            cancellationToken);
+        await ExecuteWithTempDataAsync(async () =>
+            await _orderService.RejectOrderAsync(orderId, rejectionReason, User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
 
-        await _auditService.RecordInventoryChangeAsync(
-            item,
-            request.Quantity,
-            request.Reason,
-            User.FindFirstValue(ClaimTypes.NameIdentifier),
-            cancellationToken);
+        return RedirectToAction(nameof(Orders));
+    }
 
-        return RedirectToAction(nameof(Index));
+    [HttpGet]
+    public async Task<IActionResult> Inventory(CancellationToken cancellationToken)
+        => View(await BuildInventoryViewModelAsync(cancellationToken));
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Load(InventoryManagementViewModel model, CancellationToken cancellationToken)
+    {
+        if (!TryValidateModel(model.Load, nameof(model.Load)))
+        {
+            model = await BuildInventoryViewModelAsync(cancellationToken);
+            return View(nameof(Inventory), model);
+        }
+
+        await ExecuteWithTempDataAsync(async () =>
+            await _inventoryService.LoadInventoryAsync(model.Load.ProductId, model.Load.Quantity, model.Load.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+
+        return RedirectToAction(nameof(Inventory));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Scrap(InventoryManagementViewModel model, CancellationToken cancellationToken)
+    {
+        if (!TryValidateModel(model.Scrap, nameof(model.Scrap)))
+        {
+            model = await BuildInventoryViewModelAsync(cancellationToken);
+            return View(nameof(Inventory), model);
+        }
+
+        await ExecuteWithTempDataAsync(async () =>
+            await _inventoryService.ScrapProductAsync(model.Scrap.ProductId, model.Scrap.Quantity, model.Scrap.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+
+        return RedirectToAction(nameof(Inventory));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Replace(InventoryManagementViewModel model, CancellationToken cancellationToken)
+    {
+        if (!TryValidateModel(model.Replace, nameof(model.Replace)))
+        {
+            model = await BuildInventoryViewModelAsync(cancellationToken);
+            return View(nameof(Inventory), model);
+        }
+
+        await ExecuteWithTempDataAsync(async () =>
+            await _inventoryService.SwapProductAsync(model.Replace.FromProductId, model.Replace.ToProductId, model.Replace.Quantity, model.Replace.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+
+        return RedirectToAction(nameof(Inventory));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Products(CancellationToken cancellationToken)
+        => View("Products/Index", await _managementService.GetProductsAsync(cancellationToken));
+
+    [HttpGet]
+    public async Task<IActionResult> ProductDetails(int id, CancellationToken cancellationToken)
+    {
+        var product = await _managementService.GetProductByIdAsync(id, cancellationToken);
+        return product is null ? NotFound() : View("Products/Details", product);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CreateProduct(CancellationToken cancellationToken)
+    {
+        await LoadCategoriesAsync(cancellationToken);
+        return View("Products/Create", new Product());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateProduct(Product product, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            await LoadCategoriesAsync(cancellationToken);
+            return View("Products/Create", product);
+        }
+
+        await _managementService.CreateProductAsync(product, cancellationToken);
+        TempData["Success"] = "Продуктът е създаден успешно.";
+        return RedirectToAction(nameof(Products));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditProduct(int id, CancellationToken cancellationToken)
+    {
+        var product = await _managementService.GetProductByIdAsync(id, cancellationToken);
+        if (product is null) return NotFound();
+
+        await LoadCategoriesAsync(cancellationToken);
+        return View("Products/Edit", product);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditProduct(Product product, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            await LoadCategoriesAsync(cancellationToken);
+            return View("Products/Edit", product);
+        }
+
+        await _managementService.UpdateProductAsync(product, cancellationToken);
+        TempData["Success"] = "Продуктът е обновен.";
+        return RedirectToAction(nameof(Products));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteProduct(int id, CancellationToken cancellationToken)
+    {
+        var product = await _managementService.GetProductByIdAsync(id, cancellationToken);
+        return product is null ? NotFound() : View("Products/Delete", product);
+    }
+
+    [HttpPost, ActionName("DeleteProduct")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteProductConfirmed(int id, CancellationToken cancellationToken)
+    {
+        await _managementService.DeleteProductAsync(id, cancellationToken);
+        TempData["Success"] = "Продуктът е изтрит.";
+        return RedirectToAction(nameof(Products));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Categories(CancellationToken cancellationToken)
+        => View("Categories/Index", await _managementService.GetCategoriesAsync(cancellationToken));
+
+    [HttpGet]
+    public IActionResult CreateCategory() => View("Categories/Create", new Category());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateCategory(Category category, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid) return View("Categories/Create", category);
+        await _managementService.CreateCategoryAsync(category, cancellationToken);
+        TempData["Success"] = "Категорията е създадена.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditCategory(int id, CancellationToken cancellationToken)
+    {
+        var category = await _managementService.GetCategoryByIdAsync(id, cancellationToken);
+        return category is null ? NotFound() : View("Categories/Edit", category);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditCategory(Category category, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid) return View("Categories/Edit", category);
+        await _managementService.UpdateCategoryAsync(category, cancellationToken);
+        TempData["Success"] = "Категорията е обновена.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteCategory(int id, CancellationToken cancellationToken)
+    {
+        var category = await _managementService.GetCategoryByIdAsync(id, cancellationToken);
+        return category is null ? NotFound() : View("Categories/Delete", category);
+    }
+
+    [HttpPost, ActionName("DeleteCategory")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteCategoryConfirmed(int id, CancellationToken cancellationToken)
+    {
+        await _managementService.DeleteCategoryAsync(id, cancellationToken);
+        TempData["Success"] = "Категорията е изтрита.";
+        return RedirectToAction(nameof(Categories));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Ingredients(CancellationToken cancellationToken)
+        => View("Ingredients/Index", await _managementService.GetIngredientsAsync(cancellationToken));
+
+    [HttpGet]
+    public IActionResult CreateIngredient() => View("Ingredients/Create", new Ingredient());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateIngredient(Ingredient ingredient, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid) return View("Ingredients/Create", ingredient);
+        await _managementService.CreateIngredientAsync(ingredient, cancellationToken);
+        TempData["Success"] = "Суровината е създадена.";
+        return RedirectToAction(nameof(Ingredients));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> IngredientDetails(int id, CancellationToken cancellationToken)
+    {
+        var ingredient = await _managementService.GetIngredientByIdAsync(id, cancellationToken);
+        return ingredient is null ? NotFound() : View("Ingredients/Details", ingredient);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditIngredient(int id, CancellationToken cancellationToken)
+    {
+        var ingredient = await _managementService.GetIngredientByIdAsync(id, cancellationToken);
+        return ingredient is null ? NotFound() : View("Ingredients/Edit", ingredient);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditIngredient(Ingredient ingredient, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid) return View("Ingredients/Edit", ingredient);
+        await _managementService.UpdateIngredientAsync(ingredient, cancellationToken);
+        TempData["Success"] = "Суровината е обновена.";
+        return RedirectToAction(nameof(Ingredients));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteIngredient(int id, CancellationToken cancellationToken)
+    {
+        var ingredient = await _managementService.GetIngredientByIdAsync(id, cancellationToken);
+        return ingredient is null ? NotFound() : View("Ingredients/Delete", ingredient);
+    }
+
+    [HttpPost, ActionName("DeleteIngredient")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteIngredientConfirmed(int id, CancellationToken cancellationToken)
+    {
+        await _managementService.DeleteIngredientAsync(id, cancellationToken);
+        TempData["Success"] = "Суровината е изтрита.";
+        return RedirectToAction(nameof(Ingredients));
+    }
+
+    private async Task<InventoryManagementViewModel> BuildInventoryViewModelAsync(CancellationToken cancellationToken)
+        => new()
+        {
+            InventoryItems = await _managementService.GetInventoryItemsAsync(cancellationToken),
+            RecentAudits = await _managementService.GetRecentAuditsAsync(15, cancellationToken)
+        };
+
+    private async Task LoadCategoriesAsync(CancellationToken cancellationToken)
+    {
+        var categories = await _managementService.GetCategoriesAsync(cancellationToken);
+        ViewBag.CategoryOptions = categories.Select(c => new SelectListItem(c.Name, c.Id.ToString()));
+    }
+
+    private async Task ExecuteWithTempDataAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+            TempData["Success"] = "Операцията е успешна.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+        }
     }
 }

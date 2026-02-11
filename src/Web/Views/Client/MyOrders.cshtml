@@ -1,57 +1,9 @@
-@model IReadOnlyList<IceCreamM12.Domain.Entities.Order>
-
-@{
-    ViewData["Title"] = "My Orders";
-}
-
+@model IceCreamM12.Web.Models.ViewModels.MyOrdersViewModel
+@{ ViewData["Title"] = "My Orders"; }
 <h1>My Orders</h1>
-
-@if (TempData["OrderSuccess"] is string successMessage)
-{
-    <div class="alert alert-success" role="alert">@successMessage</div>
-}
-
-@if (!Model.Any())
-{
-    <p>You do not have any orders yet.</p>
-    <a asp-action="NewOrder" class="btn btn-primary">Create your first order</a>
-}
-else
-{
-    <p>Review current and past orders submitted by your account.</p>
-
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Order #</th>
-                    <th>Placed</th>
-                    <th>Status</th>
-                    <th>Items</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var order in Model)
-                {
-                    <tr>
-                        <td>@order.OrderNumber</td>
-                        <td>@order.OrderedAt.ToLocalTime().ToString("g")</td>
-                        <td>@order.Status</td>
-                        <td>
-                            <ul class="mb-0">
-                                @foreach (var item in order.Items)
-                                {
-                                    <li>@item.Product?.Name x @item.Quantity</li>
-                                }
-                            </ul>
-                        </td>
-                        <td>@order.TotalAmount.ToString("F2") lv</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <a asp-action="NewOrder" class="btn btn-primary">New order</a>
+@if (!Model.Orders.Any()) { <p>No orders yet.</p><a asp-action="NewOrder" class="btn btn-primary">New Order</a> }
+else {
+<table class="table table-striped"><thead><tr><th>#</th><th>Date</th><th>Status</th><th>Items</th><th>Total</th></tr></thead><tbody>
+@foreach(var o in Model.Orders){<tr><td>@o.OrderNumber</td><td>@o.OrderedAt.ToLocalTime()</td><td>@o.Status</td><td>@string.Join(", ", o.Items.Select(i => $"{i.Product?.Name} x{i.Quantity}"))</td><td>@o.TotalAmount.ToString("F2")</td></tr>}
+</tbody></table>
 }

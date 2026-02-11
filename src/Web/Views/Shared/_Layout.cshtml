@@ -7,83 +7,65 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">IceCreamM12</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Products">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a>
-                        </li>
-                        @if (User.Identity?.IsAuthenticated ?? false)
-                        {
-                            @if (User.IsInRole("Owner"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Operations" asp-action="Dashboard">Owner Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Owner" asp-action="Index">Owner Admin</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Worker"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Operations" asp-action="Dashboard">Worker Dashboard</a>
-                                </li>
-                            }
-                            @if (!(User.IsInRole("Owner") || User.IsInRole("Worker")))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Client" asp-action="MyOrders">My Orders</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Client" asp-action="NewOrder">New Order</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Client" asp-action="Profile">Profile</a>
-                                </li>
-                            }
-                            @if (User.IsInRole("Owner") || User.IsInRole("Worker"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Operations" asp-action="Inventory">Inventory</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Operations" asp-action="Orders">Orders</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Operations" asp-action="Production">Production</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Operations" asp-action="DailyInventoryReport">Daily Report</a>
-                                </li>
-                            }
-                        }
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <main class="container mt-4">
-        @RenderBody()
-    </main>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">IceCreamM12</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Products">Products</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a></li>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        if (User.IsInRole("Client"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="MyOrders">My Orders</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="NewOrder">New Order</a></li>
+                        }
+
+                        if (User.IsInRole("Worker") || User.IsInRole("Owner"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Dashboard">Worker Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Orders">Orders</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Inventory">Inventory</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="DailyCheck">Daily Check</a></li>
+                        }
+
+                        if (User.IsInRole("Owner"))
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Owner Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Products">Products</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Categories">Categories</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Ingredients">Ingredients</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Inventory">Inventory</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Orders">Orders</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Reports</a></li>
+                        }
+                    }
+                </ul>
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="container mt-4">
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success">@success</div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+
+    @RenderBody()
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

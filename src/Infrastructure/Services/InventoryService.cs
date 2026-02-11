@@ -7,8 +7,7 @@ namespace IceCreamM12.Infrastructure.Services;
 
 public class InventoryService : IInventoryService
 {
-    private const string DefaultAuditReason = "Няма причина";
-    private readonly ApplicationDbContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
     private readonly IAuditService _auditService;
 
     public InventoryService(ApplicationDbContext dbContext, IAuditService auditService)
@@ -188,8 +187,11 @@ public class InventoryService : IInventoryService
 
     private static string NormalizeReason(string? reason)
     {
-        return string.IsNullOrWhiteSpace(reason)
-            ? DefaultAuditReason
-            : reason.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new InvalidOperationException("Причината е задължителна.");
+        }
+
+        return reason.Trim();
     }
 }

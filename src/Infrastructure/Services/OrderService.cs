@@ -1,4 +1,5 @@
 using IceCreamM12.Application.Interfaces;
+using IceCreamM12.Domain.Entities;
 using IceCreamM12.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,71 @@ public class OrderService : IOrderService
     {
         _dbContext = dbContext;
         _auditService = auditService;
+    }
+
+    public Task<List<Product>> GetAvailableProductsAsync(CancellationToken cancellationToken)
+        => _dbContext.Products
+            .Include(p => p.InventoryItem)
+            .Where(p => p.InventoryItem != null && p.InventoryItem.QuantityOnHand > 0)
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<List<Order>> GetOrdersByCustomerEmailAsync(string customerEmail, CancellationToken cancellationToken)
+        => _dbContext.Orders
+            .Include(o => o.Items)
+            .ThenInclude(i => i.Product)
+            .Where(o => o.CustomerEmail == customerEmail)
+            .OrderByDescending(o => o.OrderedAt)
+            .ToListAsync(cancellationToken);
+
+    public async Task<Order> CreatePendingOrderAsync(
+        int productId,
+        int quantity,
+        string customerName,
+        string customerEmail,
+        CancellationToken cancellationToken)
+    {
+        if (quantity <= 0)
+        {
+            throw new InvalidOperationException("Quantity must be greater than zero.");
+        }
+
+        var product = await _dbContext.Products
+            .Include(p => p.InventoryItem)
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product?.InventoryItem is null || product.InventoryItem.QuantityOnHand <= 0)
+        {
+            throw new InvalidOperationException("Продуктът не е наличен.");
+        }
+
+        if (quantity > product.InventoryItem.QuantityOnHand)
+        {
+            throw new InvalidOperationException($"Налични са само {product.InventoryItem.QuantityOnHand} бр.");
+        }
+
+        var order = new Order
+        {
+            OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 1000)}",
+            OrderedAt = DateTime.UtcNow,
+            Status = "Pending",
+            CustomerName = customerName,
+            CustomerEmail = customerEmail,
+            TotalAmount = product.Price * quantity,
+            Items =
+            [
+                new OrderItem
+                {
+                    ProductId = product.Id,
+                    Quantity = quantity,
+                    UnitPrice = product.Price
+                }
+            ]
+        };
+
+        _dbContext.Orders.Add(order);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return order;
     }
 
     public async Task ApproveOrderAsync(

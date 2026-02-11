@@ -1,0 +1,12 @@
+@model IceCreamM12.Web.Models.ViewModels.OrdersManagementViewModel
+@{ ViewData["Title"] = "Orders"; }
+<h1>Orders Management</h1>
+<form method="get" class="row g-2 mb-3"><div class="col-auto"><select name="status" class="form-select">
+<option value="">All</option><option selected="@(Model.StatusFilter=="Pending")">Pending</option><option selected="@(Model.StatusFilter=="Approved")">Approved</option><option selected="@(Model.StatusFilter=="Rejected")">Rejected</option>
+</select></div><div class="col-auto"><button class="btn btn-primary">Filter</button></div></form>
+<table class="table table-striped"><thead><tr><th>#</th><th>Customer</th><th>Status</th><th>Total</th><th>Actions</th></tr></thead><tbody>
+@foreach (var o in Model.Orders){<tr><td>@o.OrderNumber</td><td>@o.CustomerName</td><td>@o.Status</td><td>@o.TotalAmount.ToString("F2")</td><td>
+@if (o.Status.StartsWith("Pending")){<form asp-action="ApproveOrder" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="orderId" value="@o.Id" /><button class="btn btn-sm btn-success">Approve</button></form>
+<form asp-action="RejectOrder" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="orderId" value="@o.Id" /><input name="rejectionReason" class="form-control form-control-sm d-inline w-auto" placeholder="Reason" /><button class="btn btn-sm btn-danger">Reject</button></form>}
+</td></tr>}
+</tbody></table>

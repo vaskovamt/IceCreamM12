@@ -1,46 +1,15 @@
-@model IceCreamM12.Web.Models.ClientOrderRequest
-
-@{
-    ViewData["Title"] = "New Order";
-}
-
+@model IceCreamM12.Web.Models.ViewModels.NewOrderViewModel
+@{ ViewData["Title"] = "New Order"; }
 <h1>New Order</h1>
-
-<p>Create a new order request for ice cream products.</p>
-
-<form asp-action="NewOrder" method="post" class="mt-4">
-    @Html.AntiForgeryToken()
-
-    <div class="mb-3">
-        <label asp-for="ProductId" class="form-label"></label>
-        <select asp-for="ProductId" asp-items="ViewBag.ProductOptions" class="form-select">
-            <option value="">Select product...</option>
-        </select>
-        <span asp-validation-for="ProductId" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Quantity" class="form-label"></label>
-        <input asp-for="Quantity" class="form-control" min="1" max="100" />
-        <span asp-validation-for="Quantity" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="CustomerName" class="form-label"></label>
-        <input asp-for="CustomerName" class="form-control" />
-        <span asp-validation-for="CustomerName" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="CustomerEmail" class="form-label"></label>
-        <input asp-for="CustomerEmail" class="form-control" />
-        <span asp-validation-for="CustomerEmail" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Submit order</button>
-    <a asp-action="MyOrders" class="btn btn-outline-secondary ms-2">View my orders</a>
+<form asp-action="NewOrder" method="post">@Html.AntiForgeryToken()
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="mb-3"><label asp-for="ProductId" class="form-label"></label><select asp-for="ProductId" class="form-select">
+<option value="">Изберете продукт</option>
+@foreach (var product in Model.AvailableProducts){<option value="@product.Id">@product.Name (налични: @(product.InventoryItem?.QuantityOnHand ?? 0))</option>}
+</select><span asp-validation-for="ProductId" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="Quantity" class="form-label"></label><input asp-for="Quantity" class="form-control"/><span asp-validation-for="Quantity" class="text-danger"></span></div>
+<div class="mb-3"><label asp-for="CustomerName" class="form-label"></label><input asp-for="CustomerName" class="form-control"/></div>
+<div class="mb-3"><label asp-for="CustomerEmail" class="form-label"></label><input asp-for="CustomerEmail" class="form-control"/></div>
+<button class="btn btn-primary">Submit</button>
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

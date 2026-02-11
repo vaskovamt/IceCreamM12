@@ -1,0 +1,2 @@
+@model IceCreamM12.Domain.Entities.Category
+<h1>Create Category</h1><form asp-action="CreateCategory" method="post">@Html.AntiForgeryToken()<input asp-for="Name" class="form-control mb-2"/><textarea asp-for="Description" class="form-control mb-2"></textarea><button class="btn btn-primary">Save</button></form>

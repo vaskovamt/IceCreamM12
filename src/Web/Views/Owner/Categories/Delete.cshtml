@@ -1,0 +1,2 @@
+@model IceCreamM12.Domain.Entities.Category
+<h1>Delete Category</h1><p>Delete @Model.Name?</p><form asp-action="DeleteCategory" method="post">@Html.AntiForgeryToken()<input type="hidden" asp-for="Id"/><button class="btn btn-danger">Delete</button></form>

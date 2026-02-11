@@ -1,0 +1,3 @@
+@model IceCreamM12.Web.Models.ViewModels.WorkerDashboardViewModel
+<h1>Worker Dashboard</h1>
+<div class="row g-3"><div class="col-md-4"><div class="card"><div class="card-body"><h6>Pending Orders</h6><h3>@Model.Data.PendingOrdersCount</h3></div></div></div><div class="col-md-4"><div class="card"><div class="card-body"><h6>Low Stock</h6><h3>@Model.Data.LowStockProducts.Count</h3></div></div></div><div class="col-md-4"><div class="card"><div class="card-body"><h6>Today Ops</h6><h3>@Model.Data.TodayOperationsCount</h3></div></div></div></div>

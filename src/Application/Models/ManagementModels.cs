@@ -1,0 +1,28 @@
+using IceCreamM12.Domain.Entities;
+
+namespace IceCreamM12.Application.Models;
+
+public class OwnerDashboardData
+{
+    public int PendingOrdersCount { get; set; }
+    public int TotalProducts { get; set; }
+    public List<Product> LowStockProducts { get; set; } = [];
+    public List<InventoryAudit> RecentAudits { get; set; } = [];
+}
+
+public class WorkerDashboardData
+{
+    public int PendingOrdersCount { get; set; }
+    public List<Product> LowStockProducts { get; set; } = [];
+    public int TodayOperationsCount { get; set; }
+}
+
+public class DailyCheckResult
+{
+    public int ProductId { get; set; }
+    public string ProductName { get; set; } = string.Empty;
+    public int SystemQuantity { get; set; }
+    public int CountedQuantity { get; set; }
+    public int Difference => CountedQuantity - SystemQuantity;
+    public bool HasMismatch => Difference != 0;
+}

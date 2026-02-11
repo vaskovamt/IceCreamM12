@@ -1,117 +1,92 @@
-using IceCreamM12.Domain.Entities;
-using IceCreamM12.Infrastructure.Data;
-using IceCreamM12.Web.Models;
+using IceCreamM12.Application.Interfaces;
+using IceCreamM12.Web.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace IceCreamM12.Web.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Client,Owner,Worker")]
 public class ClientController : Controller
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IOrderService _orderService;
 
-    public ClientController(ApplicationDbContext dbContext)
+    public ClientController(IOrderService orderService)
     {
-        _dbContext = dbContext;
+        _orderService = orderService;
     }
 
+    [HttpGet]
     public async Task<IActionResult> MyOrders(CancellationToken cancellationToken)
     {
-        string? email = User.Identity?.Name;
+        var email = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(email)) return Challenge();
 
-        var orders = await _dbContext.Orders
-            .Include(order => order.Items)
-            .ThenInclude(item => item.Product)
-            .Where(order => order.CustomerEmail == email)
-            .OrderByDescending(order => order.OrderedAt)
-            .ToListAsync(cancellationToken);
-
-        return View(orders);
+        var orders = await _orderService.GetOrdersByCustomerEmailAsync(email, cancellationToken);
+        return View(new MyOrdersViewModel { Orders = orders });
     }
 
     [HttpGet]
     public async Task<IActionResult> NewOrder(CancellationToken cancellationToken)
     {
-        await LoadProductsAsync(cancellationToken);
-
-        return View(new ClientOrderRequest
+        var model = new NewOrderViewModel
         {
-            CustomerEmail = User.Identity?.Name
-        });
+            CustomerEmail = User.Identity?.Name,
+            AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken)
+        };
+
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> NewOrder(ClientOrderRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> NewOrder(NewOrderViewModel model, CancellationToken cancellationToken)
     {
-        Product? product = await _dbContext.Products
-            .AsNoTracking()
-            .FirstOrDefaultAsync(candidate => candidate.Id == request.ProductId, cancellationToken);
+        model.AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken);
 
-        if (product is null)
+        if (model.Quantity <= 0)
         {
-            ModelState.AddModelError(nameof(request.ProductId), "Please select a valid product.");
+            ModelState.AddModelError(nameof(model.Quantity), "Количеството трябва да е по-голямо от 0.");
+        }
+
+        var selectedProduct = model.AvailableProducts.FirstOrDefault(p => p.Id == model.ProductId);
+        if (selectedProduct?.InventoryItem is null)
+        {
+            ModelState.AddModelError(nameof(model.ProductId), "Моля, изберете наличен продукт.");
+        }
+        else if (model.Quantity > selectedProduct.InventoryItem.QuantityOnHand)
+        {
+            ModelState.AddModelError(nameof(model.Quantity), $"Налични са само {selectedProduct.InventoryItem.QuantityOnHand} бр.");
         }
 
         if (!ModelState.IsValid)
         {
-            await LoadProductsAsync(cancellationToken);
-            return View(request);
+            return View(model);
         }
 
-        string customerEmail = request.CustomerEmail?.Trim() ?? User.Identity?.Name ?? string.Empty;
-        string customerName = request.CustomerName?.Trim();
-
-        if (string.IsNullOrWhiteSpace(customerName))
+        try
         {
-            customerName = customerEmail;
+            var customerEmail = string.IsNullOrWhiteSpace(model.CustomerEmail)
+                ? User.Identity?.Name ?? string.Empty
+                : model.CustomerEmail.Trim();
+
+            var customerName = string.IsNullOrWhiteSpace(model.CustomerName)
+                ? customerEmail
+                : model.CustomerName.Trim();
+
+            var order = await _orderService.CreatePendingOrderAsync(
+                model.ProductId,
+                model.Quantity,
+                customerName,
+                customerEmail,
+                cancellationToken);
+
+            TempData["Success"] = $"Поръчката {order.OrderNumber} е създадена.";
+            return RedirectToAction(nameof(MyOrders));
         }
-
-        var order = new Order
+        catch (Exception ex)
         {
-            OrderNumber = $"ORD-{DateTime.UtcNow:yyyyMMddHHmmss}-{Random.Shared.Next(100, 1000)}",
-            OrderedAt = DateTime.UtcNow,
-            Status = "Pending",
-            CustomerName = customerName,
-            CustomerEmail = customerEmail,
-            TotalAmount = product!.Price * request.Quantity,
-            Items =
-            [
-                new OrderItem
-                {
-                    ProductId = product.Id,
-                    Quantity = request.Quantity,
-                    UnitPrice = product.Price
-                }
-            ]
-        };
-
-        _dbContext.Orders.Add(order);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        TempData["OrderSuccess"] = $"Order {order.OrderNumber} was submitted.";
-        return RedirectToAction(nameof(MyOrders));
-    }
-
-    public IActionResult Profile()
-    {
-        return View();
-    }
-
-    private async Task LoadProductsAsync(CancellationToken cancellationToken)
-    {
-        var products = await _dbContext.Products
-            .OrderBy(product => product.Name)
-            .Select(product => new SelectListItem
-            {
-                Value = product.Id.ToString(),
-                Text = $"{product.Name} - {product.Price:F2} lv"
-            })
-            .ToListAsync(cancellationToken);
-
-        ViewBag.ProductOptions = products;
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
     }
 }

@@ -42,6 +42,7 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IManagementService, ManagementService>();
 builder.Services.AddScoped<IProductionService, ProductionService>();
 
 var app = builder.Build();

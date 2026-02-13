@@ -32,30 +32,57 @@ public class OrderService : IOrderService
             .ToListAsync(cancellationToken);
 
     public async Task<Order> CreatePendingOrderAsync(
-        int productId,
-        int quantity,
+        IReadOnlyCollection<OrderProductRequest> products,
         string customerName,
         string customerEmail,
         CancellationToken cancellationToken)
     {
-        if (quantity <= 0)
+        if (products.Count == 0)
+        {
+            throw new InvalidOperationException("Order must include at least one product.");
+        }
+
+        var normalizedItems = products
+            .GroupBy(item => item.ProductId)
+            .Select(group => new OrderProductRequest(group.Key, group.Sum(item => item.Quantity)))
+            .ToList();
+
+        if (normalizedItems.Any(item => item.Quantity <= 0))
         {
             throw new InvalidOperationException("Quantity must be greater than zero.");
         }
 
-        var product = await _dbContext.Products
+        var productIds = normalizedItems.Select(item => item.ProductId).ToList();
+        var dbProducts = await _dbContext.Products
             .Include(p => p.InventoryItem)
-            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+            .Where(p => productIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, cancellationToken);
 
-        if (product?.InventoryItem is null || product.InventoryItem.QuantityOnHand <= 0)
+        foreach (var item in normalizedItems)
         {
-            throw new InvalidOperationException("Продуктът не е наличен.");
+            if (!dbProducts.TryGetValue(item.ProductId, out var product) || product.InventoryItem is null || product.InventoryItem.QuantityOnHand <= 0)
+            {
+                throw new InvalidOperationException("Продуктът не е наличен.");
+            }
+
+            if (item.Quantity > product.InventoryItem.QuantityOnHand)
+            {
+                throw new InvalidOperationException($"Налични са само {product.InventoryItem.QuantityOnHand} бр. за {product.Name}.");
+            }
         }
 
-        if (quantity > product.InventoryItem.QuantityOnHand)
-        {
-            throw new InvalidOperationException($"Налични са само {product.InventoryItem.QuantityOnHand} бр.");
-        }
+        var orderItems = normalizedItems
+            .Select(item =>
+            {
+                var product = dbProducts[item.ProductId];
+                return new OrderItem
+                {
+                    ProductId = product.Id,
+                    Quantity = item.Quantity,
+                    UnitPrice = product.Price
+                };
+            })
+            .ToList();
 
         var order = new Order
         {
@@ -64,16 +91,8 @@ public class OrderService : IOrderService
             Status = "Pending",
             CustomerName = customerName,
             CustomerEmail = customerEmail,
-            TotalAmount = product.Price * quantity,
-            Items =
-            [
-                new OrderItem
-                {
-                    ProductId = product.Id,
-                    Quantity = quantity,
-                    UnitPrice = product.Price
-                }
-            ]
+            TotalAmount = orderItems.Sum(item => item.UnitPrice * item.Quantity),
+            Items = orderItems
         };
 
         _dbContext.Orders.Add(order);

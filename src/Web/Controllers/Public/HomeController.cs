@@ -17,7 +17,7 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var products = await _managementService.GetProductsAsync(cancellationToken);
         return View(products.Take(12).ToList());

@@ -8,6 +8,7 @@ using IceCreamM12.Infrastructure.Repositories;
 using IceCreamM12.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
@@ -75,6 +76,16 @@ if (httpsPort.HasValue)
 }
 
 app.UseStaticFiles();
+
+var sharedImagesPath = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "images");
+if (Directory.Exists(sharedImagesPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(sharedImagesPath),
+        RequestPath = "/images"
+    });
+}
 
 app.UseRouting();
 

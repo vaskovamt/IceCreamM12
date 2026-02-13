@@ -48,7 +48,12 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
 
-        if (!await context.Categories.AnyAsync())
+        Dictionary<string, Category> categoriesByName = await context.Categories
+            .ToDictionaryAsync(category => category.Name);
+
+        bool categoriesChanged = false;
+
+        if (!categoriesByName.ContainsKey("IceCream"))
         {
             context.Categories.AddRange(
                 new Category { Name = "IceCream", Description = "All ice cream products." },
@@ -84,26 +89,26 @@ public static class DbInitializer
             "ЛЕШНИК"
         ];
 
-        (string Size, decimal Price, int CategoryId)[] iceCreamSizes =
+        (string Size, decimal Price)[] iceCreamSizes =
         [
-            ("0.100kg", 0.87m, 1),
-            ("0.300kg", 0.00m, 1),
-            ("0.500kg", 2.66m, 1),
-            ("2.000kg", 8.95m, 1),
-            ("2.500kg", 13.04m, 1),
-            ("8.000kg", 29.14m, 1)
+            ("0.100kg", 0.87m),
+            ("0.300kg", 0.00m),
+            ("0.500kg", 2.66m),
+            ("2.000kg", 8.95m),
+            ("2.500kg", 13.04m),
+            ("8.000kg", 29.14m)
         ];
 
-        (string Size, decimal Price, int CategoryId)[] cones =
+        (string Size, decimal Price)[] cones =
         [
-            ("малка", 0.05m, 2),
-            ("средна", 0.10m, 2),
-            ("голяма", 0.15m, 2)
+            ("малка", 0.05m),
+            ("средна", 0.10m),
+            ("голяма", 0.15m)
         ];
 
         var seededProducts = new List<Product>();
 
-        foreach ((string size, decimal price, int categoryId) in iceCreamSizes)
+        foreach ((string size, decimal price) in iceCreamSizes)
         {
             foreach (string flavor in flavors)
             {
@@ -118,19 +123,19 @@ public static class DbInitializer
                     Name = $"Сладолед {size} - {flavor}",
                     Description = description,
                     Price = price,
-                    CategoryId = categoryId
+                    CategoryId = iceCreamCategoryId
                 });
             }
         }
 
-        foreach ((string size, decimal price, int categoryId) in cones)
+        foreach ((string size, decimal price) in cones)
         {
             seededProducts.Add(new Product
             {
                 Name = $"Фунийка - {size}",
                 Description = $"Размер: {size}",
                 Price = price,
-                CategoryId = categoryId
+                CategoryId = conesCategoryId
             });
         }
 

@@ -74,142 +74,162 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
 
-        if (!await context.Products.AnyAsync())
+        string[] flavors =
+        [
+            "ВАНИЛИЯ",
+            "КАКАО",
+            "ЯГОДА",
+            "МАЛИНА",
+            "БОРОВНИКА",
+            "ПЪПЕШ",
+            "КАРАМЕЛ",
+            "ЛЕШНИК"
+        ];
+
+        (string Size, decimal Price, int CategoryId)[] iceCreamSizes =
+        [
+            ("0.100kg", 0.87m, 1),
+            ("0.300kg", 0.00m, 1),
+            ("0.500kg", 2.66m, 1),
+            ("2.000kg", 8.95m, 1),
+            ("2.500kg", 13.04m, 1),
+            ("8.000kg", 29.14m, 1)
+        ];
+
+        (string Size, decimal Price, int CategoryId)[] cones =
+        [
+            ("малка", 0.05m, 2),
+            ("средна", 0.10m, 2),
+            ("голяма", 0.15m, 2)
+        ];
+
+        var seededProducts = new List<Product>();
+
+        foreach ((string size, decimal price, int categoryId) in iceCreamSizes)
         {
-            string[] flavors =
-            [
-                "ВАНИЛИЯ",
-                "КАКАО",
-                "ЯГОДА",
-                "МАЛИНА",
-                "БОРОВНИКА",
-                "ПЪПЕШ",
-                "КАРАМЕЛ",
-                "ЛЕШНИК"
-            ];
-
-            (string Size, decimal Price, int CategoryId)[] iceCreamSizes =
-            [
-                ("0.100kg", 0.87m, 1),
-                ("0.300kg", 0.00m, 1),
-                ("0.500kg", 2.66m, 1),
-                ("2.000kg", 8.95m, 1),
-                ("2.500kg", 13.04m, 1),
-                ("8.000kg", 29.14m, 1)
-            ];
-
-            (string Size, decimal Price, int CategoryId)[] cones =
-            [
-                ("малка", 0.05m, 2),
-                ("средна", 0.10m, 2),
-                ("голяма", 0.15m, 2)
-            ];
-
-            var products = new List<Product>();
-
-            foreach ((string size, decimal price, int categoryId) in iceCreamSizes)
+            foreach (string flavor in flavors)
             {
-                foreach (string flavor in flavors)
+                string description = $"Размер: {size}; Вкус: {flavor}";
+                if (size == "0.300kg")
                 {
-                    string description = $"Размер: {size}; Вкус: {flavor}";
-                    if (size == "0.300kg")
-                    {
-                        description = $"{description}; PRICE_TBD";
-                    }
-
-                    products.Add(new Product
-                    {
-                        Name = $"Сладолед {size} - {flavor}",
-                        Description = description,
-                        Price = price,
-                        CategoryId = categoryId
-                    });
+                    description = $"{description}; PRICE_TBD";
                 }
-            }
 
-            foreach ((string size, decimal price, int categoryId) in cones)
-            {
-                products.Add(new Product
+                seededProducts.Add(new Product
                 {
-                    Name = $"Фунийка - {size}",
-                    Description = $"Размер: {size}",
+                    Name = $"Сладолед {size} - {flavor}",
+                    Description = description,
                     Price = price,
                     CategoryId = categoryId
                 });
             }
+        }
 
-            var productStocks = new List<(string ProductName, int Quantity)>
+        foreach ((string size, decimal price, int categoryId) in cones)
+        {
+            seededProducts.Add(new Product
             {
-                ("Сладолед 0.100kg - ВАНИЛИЯ", 190),
-                ("Сладолед 0.100kg - КАКАО", 170),
-                ("Сладолед 0.100kg - ЯГОДА", 160),
-                ("Сладолед 0.100kg - МАЛИНА", 145),
-                ("Сладолед 0.100kg - БОРОВНИКА", 120),
-                ("Сладолед 0.100kg - ПЪПЕШ", 98),
-                ("Сладолед 0.100kg - КАРАМЕЛ", 184),
-                ("Сладолед 0.100kg - ЛЕШНИК", 136),
-                ("Сладолед 0.300kg - ВАНИЛИЯ", 110),
-                ("Сладолед 0.300kg - КАКАО", 95),
-                ("Сладолед 0.300kg - ЯГОДА", 82),
-                ("Сладолед 0.300kg - МАЛИНА", 76),
-                ("Сладолед 0.300kg - БОРОВНИКА", 58),
-                ("Сладолед 0.300kg - ПЪПЕШ", 44),
-                ("Сладолед 0.300kg - КАРАМЕЛ", 104),
-                ("Сладолед 0.300kg - ЛЕШНИК", 68),
-                ("Сладолед 0.500kg - ВАНИЛИЯ", 70),
-                ("Сладолед 0.500kg - КАКАО", 66),
-                ("Сладолед 0.500kg - ЯГОДА", 54),
-                ("Сладолед 0.500kg - МАЛИНА", 49),
-                ("Сладолед 0.500kg - БОРОВНИКА", 42),
-                ("Сладолед 0.500kg - ПЪПЕШ", 28),
-                ("Сладолед 0.500kg - КАРАМЕЛ", 73),
-                ("Сладолед 0.500kg - ЛЕШНИК", 37),
-                ("Сладолед 2.000kg - ВАНИЛИЯ", 26),
-                ("Сладолед 2.000kg - КАКАО", 24),
-                ("Сладолед 2.000kg - ЯГОДА", 20),
-                ("Сладолед 2.000kg - МАЛИНА", 17),
-                ("Сладолед 2.000kg - БОРОВНИКА", 12),
-                ("Сладолед 2.000kg - ПЪПЕШ", 9),
-                ("Сладолед 2.000kg - КАРАМЕЛ", 29),
-                ("Сладолед 2.000kg - ЛЕШНИК", 15),
-                ("Сладолед 2.500kg - ВАНИЛИЯ", 21),
-                ("Сладолед 2.500kg - КАКАО", 18),
-                ("Сладолед 2.500kg - ЯГОДА", 16),
-                ("Сладолед 2.500kg - МАЛИНА", 13),
-                ("Сладолед 2.500kg - БОРОВНИКА", 10),
-                ("Сладолед 2.500kg - ПЪПЕШ", 7),
-                ("Сладолед 2.500kg - КАРАМЕЛ", 23),
-                ("Сладолед 2.500kg - ЛЕШНИК", 11),
-                ("Сладолед 8.000kg - ВАНИЛИЯ", 9),
-                ("Сладолед 8.000kg - КАКАО", 8),
-                ("Сладолед 8.000kg - ЯГОДА", 7),
-                ("Сладолед 8.000kg - МАЛИНА", 5),
-                ("Сладолед 8.000kg - БОРОВНИКА", 3),
-                ("Сладолед 8.000kg - ПЪПЕШ", 2),
-                ("Сладолед 8.000kg - КАРАМЕЛ", 10),
-                ("Сладолед 8.000kg - ЛЕШНИК", 4),
-                ("Фунийка - малка", 1320),
-                ("Фунийка - средна", 860),
-                ("Фунийка - голяма", 420)
-            };
+                Name = $"Фунийка - {size}",
+                Description = $"Размер: {size}",
+                Price = price,
+                CategoryId = categoryId
+            });
+        }
 
-            context.Products.AddRange(products);
+        var productStocks = new List<(string ProductName, int Quantity)>
+        {
+            ("Сладолед 0.100kg - ВАНИЛИЯ", 190),
+            ("Сладолед 0.100kg - КАКАО", 170),
+            ("Сладолед 0.100kg - ЯГОДА", 160),
+            ("Сладолед 0.100kg - МАЛИНА", 145),
+            ("Сладолед 0.100kg - БОРОВНИКА", 120),
+            ("Сладолед 0.100kg - ПЪПЕШ", 98),
+            ("Сладолед 0.100kg - КАРАМЕЛ", 184),
+            ("Сладолед 0.100kg - ЛЕШНИК", 136),
+            ("Сладолед 0.300kg - ВАНИЛИЯ", 110),
+            ("Сладолед 0.300kg - КАКАО", 95),
+            ("Сладолед 0.300kg - ЯГОДА", 82),
+            ("Сладолед 0.300kg - МАЛИНА", 76),
+            ("Сладолед 0.300kg - БОРОВНИКА", 58),
+            ("Сладолед 0.300kg - ПЪПЕШ", 44),
+            ("Сладолед 0.300kg - КАРАМЕЛ", 104),
+            ("Сладолед 0.300kg - ЛЕШНИК", 68),
+            ("Сладолед 0.500kg - ВАНИЛИЯ", 70),
+            ("Сладолед 0.500kg - КАКАО", 66),
+            ("Сладолед 0.500kg - ЯГОДА", 54),
+            ("Сладолед 0.500kg - МАЛИНА", 49),
+            ("Сладолед 0.500kg - БОРОВНИКА", 42),
+            ("Сладолед 0.500kg - ПЪПЕШ", 28),
+            ("Сладолед 0.500kg - КАРАМЕЛ", 73),
+            ("Сладолед 0.500kg - ЛЕШНИК", 37),
+            ("Сладолед 2.000kg - ВАНИЛИЯ", 26),
+            ("Сладолед 2.000kg - КАКАО", 24),
+            ("Сладолед 2.000kg - ЯГОДА", 20),
+            ("Сладолед 2.000kg - МАЛИНА", 17),
+            ("Сладолед 2.000kg - БОРОВНИКА", 12),
+            ("Сладолед 2.000kg - ПЪПЕШ", 9),
+            ("Сладолед 2.000kg - КАРАМЕЛ", 29),
+            ("Сладолед 2.000kg - ЛЕШНИК", 15),
+            ("Сладолед 2.500kg - ВАНИЛИЯ", 21),
+            ("Сладолед 2.500kg - КАКАО", 18),
+            ("Сладолед 2.500kg - ЯГОДА", 16),
+            ("Сладолед 2.500kg - МАЛИНА", 13),
+            ("Сладолед 2.500kg - БОРОВНИКА", 10),
+            ("Сладолед 2.500kg - ПЪПЕШ", 7),
+            ("Сладолед 2.500kg - КАРАМЕЛ", 23),
+            ("Сладолед 2.500kg - ЛЕШНИК", 11),
+            ("Сладолед 8.000kg - ВАНИЛИЯ", 9),
+            ("Сладолед 8.000kg - КАКАО", 8),
+            ("Сладолед 8.000kg - ЯГОДА", 7),
+            ("Сладолед 8.000kg - МАЛИНА", 5),
+            ("Сладолед 8.000kg - БОРОВНИКА", 3),
+            ("Сладолед 8.000kg - ПЪПЕШ", 2),
+            ("Сладолед 8.000kg - КАРАМЕЛ", 10),
+            ("Сладолед 8.000kg - ЛЕШНИК", 4),
+            ("Фунийка - малка", 1320),
+            ("Фунийка - средна", 860),
+            ("Фунийка - голяма", 420)
+        };
+
+        Dictionary<string, Product> existingProductsByName = await context.Products
+            .ToDictionaryAsync(product => product.Name);
+
+        List<Product> missingProducts = seededProducts
+            .Where(product => !existingProductsByName.ContainsKey(product.Name))
+            .ToList();
+
+        if (missingProducts.Count > 0)
+        {
+            context.Products.AddRange(missingProducts);
             await context.SaveChangesAsync();
 
-            var productsByName = await context.Products.ToDictionaryAsync(product => product.Name);
-            var inventoryItems = productStocks
-                .Where(stock => productsByName.ContainsKey(stock.ProductName))
-                .Select(stock => new InventoryItem
-                {
-                    ProductId = productsByName[stock.ProductName].Id,
-                    QuantityOnHand = stock.Quantity,
-                    ReorderLevel = Math.Max(1, stock.Quantity / 5),
-                    StorageLocation = "Main Freezer",
-                    LastUpdatedAt = DateTime.UtcNow
-                })
-                .ToList();
+            foreach (Product product in missingProducts)
+            {
+                existingProductsByName[product.Name] = product;
+            }
+        }
 
-            context.InventoryItems.AddRange(inventoryItems);
+        HashSet<int> existingInventoryProductIds = await context.InventoryItems
+            .Select(inventoryItem => inventoryItem.ProductId)
+            .ToHashSetAsync();
+
+        var missingInventoryItems = productStocks
+            .Where(stock => existingProductsByName.ContainsKey(stock.ProductName))
+            .Select(stock => (Product: existingProductsByName[stock.ProductName], stock.Quantity))
+            .Where(entry => !existingInventoryProductIds.Contains(entry.Product.Id))
+            .Select(entry => new InventoryItem
+            {
+                ProductId = entry.Product.Id,
+                QuantityOnHand = entry.Quantity,
+                ReorderLevel = Math.Max(1, entry.Quantity / 5),
+                StorageLocation = "Main Freezer",
+                LastUpdatedAt = DateTime.UtcNow
+            })
+            .ToList();
+
+        if (missingInventoryItems.Count > 0)
+        {
+            context.InventoryItems.AddRange(missingInventoryItems);
             await context.SaveChangesAsync();
         }
 

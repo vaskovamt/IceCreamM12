@@ -51,8 +51,6 @@ public static class DbInitializer
         Dictionary<string, Category> categoriesByName = await context.Categories
             .ToDictionaryAsync(category => category.Name);
 
-        bool categoriesChanged = false;
-
         if (!categoriesByName.ContainsKey("IceCream"))
         {
             context.Categories.AddRange(
@@ -61,7 +59,13 @@ public static class DbInitializer
             );
 
             await context.SaveChangesAsync();
+
+            categoriesByName = await context.Categories
+                .ToDictionaryAsync(category => category.Name);
         }
+
+        int iceCreamCategoryId = categoriesByName["IceCream"].Id;
+        int conesCategoryId = categoriesByName["Cones"].Id;
 
         if (!await context.Ingredients.AnyAsync())
         {

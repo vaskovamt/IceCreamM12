@@ -48,20 +48,23 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
 
-        Dictionary<string, Category> categoriesByName = await context.Categories
-            .ToDictionaryAsync(category => category.Name);
+        Dictionary<string, Category> categoriesByName = await LoadCategoriesByNameAsync(context);
 
-        if (!categoriesByName.ContainsKey("IceCream"))
+        if (!categoriesByName.ContainsKey("IceCream") || !categoriesByName.ContainsKey("Cones"))
         {
-            context.Categories.AddRange(
-                new Category { Name = "IceCream", Description = "All ice cream products." },
-                new Category { Name = "Cones", Description = "All cone products." }
-            );
+            if (!categoriesByName.ContainsKey("IceCream"))
+            {
+                context.Categories.Add(new Category { Name = "IceCream", Description = "All ice cream products." });
+            }
+
+            if (!categoriesByName.ContainsKey("Cones"))
+            {
+                context.Categories.Add(new Category { Name = "Cones", Description = "All cone products." });
+            }
 
             await context.SaveChangesAsync();
 
-            categoriesByName = await context.Categories
-                .ToDictionaryAsync(category => category.Name);
+            categoriesByName = await LoadCategoriesByNameAsync(context);
         }
 
         int iceCreamCategoryId = categoriesByName["IceCream"].Id;
@@ -366,5 +369,17 @@ public static class DbInitializer
         {
             await userManager.AddToRoleAsync(user, role);
         }
+    }
+
+    private static async Task<Dictionary<string, Category>> LoadCategoriesByNameAsync(ApplicationDbContext context)
+    {
+        List<Category> categories = await context.Categories
+            .AsNoTracking()
+            .OrderBy(category => category.Id)
+            .ToListAsync();
+
+        return categories
+            .GroupBy(category => category.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
     }
 }

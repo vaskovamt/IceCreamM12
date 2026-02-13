@@ -1,12 +1,11 @@
 @model IReadOnlyList<IceCreamM12.Domain.Entities.Product>
 
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Начало";
 }
 
 <div class="text-center mb-4">
-    <h1 class="display-5">Welcome to IceCreamM12</h1>
-    <p class="lead">Explore featured products from our latest catalog.</p>
+    <h1 class="display-5">Добре дошли в Сладоледи ВАМТ</h1>
 </div>
 
 <div class="row g-3">
@@ -18,7 +17,7 @@
                     <h5 class="card-title">@product.Name</h5>
                     <p class="card-text mb-2">@product.Description</p>
                     <p class="card-text mt-auto">
-                        Price: <strong>@product.Price.ToString("C")</strong>
+                        Цена: <strong>@product.Price.ToString("C")</strong>
                     </p>
                     @if (product.Category is not null)
                     {

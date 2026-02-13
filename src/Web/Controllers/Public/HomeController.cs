@@ -17,7 +17,7 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    public IActionResult Index()
     {
         var products = await _managementService.GetProductsAsync(cancellationToken);
         return View(products.Take(12).ToList());
@@ -36,9 +36,10 @@ public class HomeController : Controller
     }
 
     [AllowAnonymous]
-    public IActionResult Products()
+    public async Task<IActionResult> Products(CancellationToken cancellationToken)
     {
-        return View();
+        var products = await _managementService.GetProductsAsync(cancellationToken);
+        return View(products);
     }
 
     [AllowAnonymous]

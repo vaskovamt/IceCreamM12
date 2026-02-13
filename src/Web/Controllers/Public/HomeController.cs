@@ -9,18 +9,18 @@ namespace IceCreamM12.Web.Controllers;
 [Authorize(Roles = "Owner,Worker,Client")]
 public class HomeController : Controller
 {
-    private readonly IFlavorService _flavorService;
+    private readonly IManagementService _managementService;
 
-    public HomeController(IFlavorService flavorService)
+    public HomeController(IManagementService managementService)
     {
-        _flavorService = flavorService;
+        _managementService = managementService;
     }
 
     [AllowAnonymous]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
-        var flavors = await _flavorService.GetAvailableFlavorsAsync(cancellationToken);
-        return View(flavors);
+        var products = await _managementService.GetProductsAsync(cancellationToken);
+        return View(products.Take(12).ToList());
     }
 
     [AllowAnonymous]

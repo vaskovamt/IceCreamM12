@@ -15,6 +15,9 @@ public class WorkerDashboardData
     public int PendingOrdersCount { get; set; }
     public List<Product> LowStockProducts { get; set; } = [];
     public int TodayOperationsCount { get; set; }
+    public List<Order> Orders { get; set; } = [];
+    public List<InventoryAudit> Operations { get; set; } = [];
+    public List<Ingredient> Ingredients { get; set; } = [];
 }
 
 public class DailyCheckResult

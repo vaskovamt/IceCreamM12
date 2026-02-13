@@ -34,6 +34,7 @@ public class ClientController : Controller
             AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken)
         };
 
+        PopulateOrderItems(model);
         return View(model);
     }
 
@@ -42,29 +43,30 @@ public class ClientController : Controller
     public async Task<IActionResult> NewOrder(NewOrderViewModel model, CancellationToken cancellationToken)
     {
         model.AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken);
-        model.Items ??= [];
+        PopulateOrderItems(model);
 
-        model.Items = model.Items
-            .Where(item => item.ProductId > 0 || item.Quantity > 0)
-            .ToList();
-
-        if (model.Items.Count == 0)
+        if (!model.Items.Any(item => item.Quantity > 0))
         {
-            ModelState.AddModelError(nameof(model.Items), "Добавете поне един продукт към поръчката.");
+            ModelState.AddModelError(nameof(model.Items), "Добавете количество за поне един продукт.");
         }
 
         foreach (var item in model.Items.Select((value, index) => new { value, index }))
         {
+            if (item.value.Quantity < 0)
+            {
+                ModelState.AddModelError($"Items[{item.index}].Quantity", "Количеството не може да е отрицателно.");
+                continue;
+            }
+
+            if (item.value.Quantity == 0)
+            {
+                continue;
+            }
+
             var selectedProduct = model.AvailableProducts.FirstOrDefault(p => p.Id == item.value.ProductId);
             if (selectedProduct?.InventoryItem is null)
             {
                 ModelState.AddModelError($"Items[{item.index}].ProductId", "Моля, изберете наличен продукт.");
-                continue;
-            }
-
-            if (item.value.Quantity <= 0)
-            {
-                ModelState.AddModelError($"Items[{item.index}].Quantity", "Количеството трябва да е по-голямо от 0.");
                 continue;
             }
 
@@ -95,6 +97,7 @@ public class ClientController : Controller
                 : model.CustomerName.Trim();
 
             var orderItems = model.Items
+                .Where(i => i.Quantity > 0)
                 .GroupBy(i => i.ProductId)
                 .Select(group => new OrderProductRequest(group.Key, group.Sum(item => item.Quantity)))
                 .ToList();
@@ -114,4 +117,17 @@ public class ClientController : Controller
             return View(model);
         }
     }
+
+    private static void PopulateOrderItems(NewOrderViewModel model)
+    {
+        var existingItems = model.Items.ToDictionary(item => item.ProductId, item => item.Quantity);
+        model.Items = model.AvailableProducts
+            .Select(product => new NewOrderItemViewModel
+            {
+                ProductId = product.Id,
+                Quantity = existingItems.GetValueOrDefault(product.Id, 0)
+            })
+            .ToList();
+    }
+
 }

@@ -25,11 +25,11 @@ public class MyOrdersViewModel
 
 public class NewOrderItemViewModel
 {
-    [Range(1, int.MaxValue, ErrorMessage = "Моля, изберете продукт.")]
+    [Required]
     [Display(Name = "Продукт")]
     public int ProductId { get; set; }
 
-    [Range(1, 1000, ErrorMessage = "Количеството трябва да е по-голямо от 0.")]
+    [Range(0, 1000, ErrorMessage = "Количеството не може да е отрицателно.")]
     [Display(Name = "Количество")]
     public int Quantity { get; set; } = 1;
 }

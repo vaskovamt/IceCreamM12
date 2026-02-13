@@ -55,54 +55,10 @@ public static class DbInitializer
 
         if (!categoriesByName.ContainsKey("IceCream"))
         {
-            var iceCreamCategory = new Category
-            {
-                Name = "IceCream",
-                Description = "All ice cream products."
-            };
-
-            context.Categories.Add(iceCreamCategory);
-            categoriesByName["IceCream"] = iceCreamCategory;
-            categoriesChanged = true;
-        }
-
-        if (!categoriesByName.ContainsKey("Cones"))
-        {
-            var coneCategory = new Category
-            {
-                Name = "Cones",
-                Description = "All cone products."
-            };
-
-            context.Categories.Add(coneCategory);
-            categoriesByName["Cones"] = coneCategory;
-            categoriesChanged = true;
-        }
-
-        if (categoriesChanged)
-        {
-            await context.SaveChangesAsync();
-            categoriesByName = await context.Categories.ToDictionaryAsync(category => category.Name);
-        }
-
-        int iceCreamCategoryId = categoriesByName["IceCream"].Id;
-        int conesCategoryId = categoriesByName["Cones"].Id;
-
-        var productsToReassign = await context.Products
-            .Where(product => product.Category != null && product.Category.Name != "IceCream" && product.Category.Name != "Cones")
-            .ToListAsync();
-
-        if (productsToReassign.Count > 0)
-        {
-            foreach (Product product in productsToReassign)
-            {
-                bool isConeProduct = product.Name.Contains("Фунийка", StringComparison.OrdinalIgnoreCase)
-                    || product.Name.Contains("Cone", StringComparison.OrdinalIgnoreCase)
-                    || (product.Description?.Contains("фуний", StringComparison.OrdinalIgnoreCase) ?? false)
-                    || (product.Description?.Contains("cone", StringComparison.OrdinalIgnoreCase) ?? false);
-
-                product.CategoryId = isConeProduct ? conesCategoryId : iceCreamCategoryId;
-            }
+            context.Categories.AddRange(
+                new Category { Name = "IceCream", Description = "All ice cream products." },
+                new Category { Name = "Cones", Description = "All cone products." }
+            );
 
             await context.SaveChangesAsync();
         }

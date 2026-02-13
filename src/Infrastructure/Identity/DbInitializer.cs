@@ -48,14 +48,61 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
 
-        if (!await context.Categories.AnyAsync())
+        Dictionary<string, Category> categoriesByName = await context.Categories
+            .ToDictionaryAsync(category => category.Name);
+
+        bool categoriesChanged = false;
+
+        if (!categoriesByName.ContainsKey("IceCream"))
         {
-            context.Categories.AddRange(
-                new Category { Name = "Scoops", Description = "Hand-scooped ice cream servings." },
-                new Category { Name = "Cones", Description = "Ice cream served in cones." },
-                new Category { Name = "Pints", Description = "Take-home pints." },
-                new Category { Name = "Sundaes", Description = "Signature sundaes with toppings." }
-            );
+            var iceCreamCategory = new Category
+            {
+                Name = "IceCream",
+                Description = "All ice cream products."
+            };
+
+            context.Categories.Add(iceCreamCategory);
+            categoriesByName["IceCream"] = iceCreamCategory;
+            categoriesChanged = true;
+        }
+
+        if (!categoriesByName.ContainsKey("Cones"))
+        {
+            var coneCategory = new Category
+            {
+                Name = "Cones",
+                Description = "All cone products."
+            };
+
+            context.Categories.Add(coneCategory);
+            categoriesByName["Cones"] = coneCategory;
+            categoriesChanged = true;
+        }
+
+        if (categoriesChanged)
+        {
+            await context.SaveChangesAsync();
+            categoriesByName = await context.Categories.ToDictionaryAsync(category => category.Name);
+        }
+
+        int iceCreamCategoryId = categoriesByName["IceCream"].Id;
+        int conesCategoryId = categoriesByName["Cones"].Id;
+
+        var productsToReassign = await context.Products
+            .Where(product => product.Category != null && product.Category.Name != "IceCream" && product.Category.Name != "Cones")
+            .ToListAsync();
+
+        if (productsToReassign.Count > 0)
+        {
+            foreach (Product product in productsToReassign)
+            {
+                bool isConeProduct = product.Name.Contains("Фунийка", StringComparison.OrdinalIgnoreCase)
+                    || product.Name.Contains("Cone", StringComparison.OrdinalIgnoreCase)
+                    || (product.Description?.Contains("фуний", StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (product.Description?.Contains("cone", StringComparison.OrdinalIgnoreCase) ?? false);
+
+                product.CategoryId = isConeProduct ? conesCategoryId : iceCreamCategoryId;
+            }
 
             await context.SaveChangesAsync();
         }
@@ -86,26 +133,26 @@ public static class DbInitializer
             "ЛЕШНИК"
         ];
 
-        (string Size, decimal Price, int CategoryId)[] iceCreamSizes =
+        (string Size, decimal Price)[] iceCreamSizes =
         [
-            ("0.100kg", 0.87m, 1),
-            ("0.300kg", 0.00m, 1),
-            ("0.500kg", 2.66m, 1),
-            ("2.000kg", 8.95m, 1),
-            ("2.500kg", 13.04m, 1),
-            ("8.000kg", 29.14m, 1)
+            ("0.100kg", 0.87m),
+            ("0.300kg", 0.00m),
+            ("0.500kg", 2.66m),
+            ("2.000kg", 8.95m),
+            ("2.500kg", 13.04m),
+            ("8.000kg", 29.14m)
         ];
 
-        (string Size, decimal Price, int CategoryId)[] cones =
+        (string Size, decimal Price)[] cones =
         [
-            ("малка", 0.05m, 2),
-            ("средна", 0.10m, 2),
-            ("голяма", 0.15m, 2)
+            ("малка", 0.05m),
+            ("средна", 0.10m),
+            ("голяма", 0.15m)
         ];
 
         var seededProducts = new List<Product>();
 
-        foreach ((string size, decimal price, int categoryId) in iceCreamSizes)
+        foreach ((string size, decimal price) in iceCreamSizes)
         {
             foreach (string flavor in flavors)
             {
@@ -120,19 +167,19 @@ public static class DbInitializer
                     Name = $"Сладолед {size} - {flavor}",
                     Description = description,
                     Price = price,
-                    CategoryId = categoryId
+                    CategoryId = iceCreamCategoryId
                 });
             }
         }
 
-        foreach ((string size, decimal price, int categoryId) in cones)
+        foreach ((string size, decimal price) in cones)
         {
             seededProducts.Add(new Product
             {
                 Name = $"Фунийка - {size}",
                 Description = $"Размер: {size}",
                 Price = price,
-                CategoryId = categoryId
+                CategoryId = conesCategoryId
             });
         }
 

@@ -9,6 +9,7 @@ using IceCreamM12.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -75,6 +76,16 @@ if (httpsPort.HasValue)
 }
 
 app.UseStaticFiles();
+
+var repositoryImagesPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "images"));
+if (Directory.Exists(repositoryImagesPath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(repositoryImagesPath),
+        RequestPath = "/images"
+    });
+}
 
 app.UseRouting();
 

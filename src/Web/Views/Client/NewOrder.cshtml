@@ -1,120 +1,296 @@
+@using System.Text.Json
 @model IceCreamM12.Web.Models.ViewModels.NewOrderViewModel
-@{ ViewData["Title"] = "New Order"; }
-<h1>New Order</h1>
-<form asp-action="NewOrder" method="post">@Html.AntiForgeryToken()
-<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+@{
+    ViewData["Title"] = "New Order";
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Продукт</th>
-            <th style="width: 220px;">Количество</th>
-        </tr>
-    </thead>
-    <tbody>
-    @for (var i = 0; i < Model.Items.Count; i++)
-    {
-        var item = Model.Items[i];
-        var productName = Model.AvailableProducts.FirstOrDefault(p => p.Id == item.ProductId)?.Name ?? string.Empty;
-        <tr>
-            <td>
-                @productName
-                <input asp-for="Items[i].ProductId" type="hidden" />
-            </td>
-            <td>
-                <input asp-for="Items[i].Quantity" class="form-control" min="0" />
-                <span asp-validation-for="Items[i].Quantity" class="text-danger"></span>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+    var productOptions = Model.AvailableProducts
+        .Select(product =>
+        {
+            var parts = (product.Name ?? string.Empty)
+                .Split(" - ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-<div class="mb-3"><label asp-for="CustomerName" class="form-label"></label><input asp-for="CustomerName" class="form-control"/></div>
-<div class="mb-3"><label asp-for="CustomerEmail" class="form-label"></label><input asp-for="CustomerEmail" class="form-control"/></div>
-<button class="btn btn-primary">Submit</button>
-</form>
+            var type = parts.Length > 0 ? parts[0] : "Други";
+            var package = parts.Length > 1 ? parts[1] : string.Empty;
+            var flavor = string.Empty;
 
-<template id="order-item-template">
-    <div class="row g-2 order-item-row" data-index="__index__">
-        <div class="col-md-7">
-            <label class="form-label" for="Items___index___ProductId">Продукт</label>
-            <select class="form-select" id="Items___index___ProductId" name="Items[__index__].ProductId">
-                <option value="">Изберете продукт</option>
-                @foreach (var product in Model.AvailableProducts)
+            if (type.StartsWith("Сладолед", StringComparison.OrdinalIgnoreCase))
+            {
+                var typeParts = type.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (typeParts.Length > 1)
                 {
-                    <option value="@product.Id">@product.Name</option>
+                    package = typeParts[^1];
+                    type = "Сладолед";
                 }
-            </select>
-            <span class="text-danger field-validation-valid" data-valmsg-for="Items[__index__].ProductId" data-valmsg-replace="true"></span>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label" for="Items___index___Quantity">Количество</label>
-            <input class="form-control" min="1" type="number" id="Items___index___Quantity" name="Items[__index__].Quantity" value="1" />
-            <span class="text-danger field-validation-valid" data-valmsg-for="Items[__index__].Quantity" data-valmsg-replace="true"></span>
-        </div>
-        <div class="col-md-2 d-flex align-items-end">
-            <button type="button" class="btn btn-outline-danger w-100 remove-item">Премахни</button>
+
+                if (parts.Length > 1)
+                {
+                    flavor = parts[1];
+                }
+            }
+
+            if (type.StartsWith("Фунийка", StringComparison.OrdinalIgnoreCase))
+            {
+                type = "Фунийка";
+                flavor = "Без вкус";
+                package = parts.Length > 1 ? parts[1] : "Стандарт";
+            }
+
+            return new
+            {
+                id = product.Id,
+                name = product.Name,
+                type,
+                flavor,
+                package,
+                stock = product.InventoryItem?.QuantityOnHand ?? 0
+            };
+        })
+        .OrderBy(product => product.type)
+        .ThenBy(product => product.flavor)
+        .ThenBy(product => product.package)
+        .ToList();
+
+    var serializedProducts = JsonSerializer.Serialize(productOptions);
+}
+
+<h1>New Order</h1>
+<form asp-action="NewOrder" method="post" id="new-order-form">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="card mb-3">
+        <div class="card-header">Добавяне на продукт</div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label" for="product-type">Тип продукт</label>
+                    <select class="form-select" id="product-type"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="product-flavor">Вкус</label>
+                    <select class="form-select" id="product-flavor"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="product-package">Разфасовка</label>
+                    <select class="form-select" id="product-package"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="product-qty">Количество</label>
+                    <input type="number" min="1" class="form-control" id="product-qty" value="1" />
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="button" id="add-product" class="btn btn-primary">+</button>
+                </div>
+            </div>
+            <div class="form-text mt-2" id="stock-hint"></div>
         </div>
     </div>
-</template>
+
+    <div class="card mb-3">
+        <div class="card-header">Продукти в поръчката</div>
+        <div class="card-body" id="order-items-summary">
+            <p class="text-muted mb-0">Все още няма добавени продукти.</p>
+        </div>
+    </div>
+
+    <div id="hidden-order-items"></div>
+
+    <div class="mb-3">
+        <label asp-for="CustomerName" class="form-label"></label>
+        <input asp-for="CustomerName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="CustomerEmail" class="form-label"></label>
+        <input asp-for="CustomerEmail" class="form-control" />
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="button" id="finish-order" class="btn btn-success">Готово с избора</button>
+        <button type="submit" id="submit-order" class="btn btn-primary d-none">Изпрати поръчка</button>
+    </div>
+
+    <div class="alert alert-info mt-3 d-none" id="final-confirmation-box">
+        <p class="mb-2">Искате ли да промените нещо преди изпращане?</p>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" id="change-order">Да, ще променя</button>
+            <button type="button" class="btn btn-primary" id="confirm-send">Не, изпрати поръчката</button>
+        </div>
+    </div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
         (() => {
-            const itemsContainer = document.getElementById('order-items');
-            const template = document.getElementById('order-item-template');
-            const addButton = document.getElementById('add-item');
+            const products = @Html.Raw(serializedProducts);
 
-            const attachRemoveHandler = (root) => {
-                root.querySelectorAll('.remove-item').forEach(button => {
-                    button.onclick = () => {
-                        const rows = itemsContainer.querySelectorAll('.order-item-row');
-                        if (rows.length === 1) {
-                            return;
-                        }
+            const typeSelect = document.getElementById('product-type');
+            const flavorSelect = document.getElementById('product-flavor');
+            const packageSelect = document.getElementById('product-package');
+            const qtyInput = document.getElementById('product-qty');
+            const stockHint = document.getElementById('stock-hint');
+            const addProductBtn = document.getElementById('add-product');
+            const hiddenContainer = document.getElementById('hidden-order-items');
+            const summaryContainer = document.getElementById('order-items-summary');
 
-                        button.closest('.order-item-row').remove();
-                        reindexRows();
-                    };
+            const finishOrderBtn = document.getElementById('finish-order');
+            const submitOrderBtn = document.getElementById('submit-order');
+            const finalConfirmationBox = document.getElementById('final-confirmation-box');
+            const changeOrderBtn = document.getElementById('change-order');
+            const confirmSendBtn = document.getElementById('confirm-send');
+
+            const selectedProducts = new Map();
+
+            const unique = (values) => [...new Set(values)];
+
+            const setOptions = (select, values) => {
+                select.innerHTML = values
+                    .map(value => `<option value="${value}">${value}</option>`)
+                    .join('');
+            };
+
+            const filteredByType = () => products.filter(product => product.type === typeSelect.value);
+
+            const filteredByTypeAndFlavor = () => filteredByType()
+                .filter(product => product.flavor === flavorSelect.value);
+
+            const currentProduct = () => filteredByTypeAndFlavor()
+                .find(product => product.package === packageSelect.value);
+
+            const renderStockHint = () => {
+                const product = currentProduct();
+                if (!product) {
+                    stockHint.textContent = '';
+                    return;
+                }
+
+                stockHint.textContent = `Наличност: ${product.stock} бр.`;
+            };
+
+            const syncHiddenInputs = () => {
+                hiddenContainer.innerHTML = '';
+                Array.from(selectedProducts.entries()).forEach(([productId, quantity], index) => {
+                    hiddenContainer.insertAdjacentHTML('beforeend',
+                        `<input type="hidden" name="Items[${index}].ProductId" value="${productId}" />` +
+                        `<input type="hidden" name="Items[${index}].Quantity" value="${quantity}" />`);
                 });
             };
 
-            const reindexRows = () => {
-                const rows = itemsContainer.querySelectorAll('.order-item-row');
-                rows.forEach((row, index) => {
-                    row.dataset.index = index;
-                    row.querySelectorAll('input, select, span, label').forEach(el => {
-                        if (el.name) {
-                            el.name = el.name.replace(/Items\[\d+\]/g, `Items[${index}]`);
-                        }
+            const renderSummary = () => {
+                if (selectedProducts.size === 0) {
+                    summaryContainer.innerHTML = '<p class="text-muted mb-0">Все още няма добавени продукти.</p>';
+                    return;
+                }
 
-                        if (el.id) {
-                            el.id = el.id.replace(/Items_\d+__/g, `Items_${index}__`);
-                        }
+                const rows = Array.from(selectedProducts.entries()).map(([productId, quantity]) => {
+                    const product = products.find(p => p.id === Number(productId));
+                    if (!product) {
+                        return '';
+                    }
 
-                        if (el.getAttribute('for')) {
-                            el.setAttribute('for', el.getAttribute('for').replace(/Items_\d+__/g, `Items_${index}__`));
-                        }
+                    return `<tr>
+                        <td>${product.type}</td>
+                        <td>${product.flavor || '-'}</td>
+                        <td>${product.package}</td>
+                        <td>${quantity}</td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-selected" data-product-id="${product.id}">Премахни</button></td>
+                    </tr>`;
+                }).join('');
 
-                        if (el.dataset.valmsgFor) {
-                            el.dataset.valmsgFor = el.dataset.valmsgFor.replace(/Items\[\d+\]/g, `Items[${index}]`);
-                        }
+                summaryContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Тип</th><th>Вкус</th><th>Разфасовка</th><th>Количество</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+                summaryContainer.querySelectorAll('.remove-selected').forEach(button => {
+                    button.addEventListener('click', () => {
+                        selectedProducts.delete(Number(button.dataset.productId));
+                        syncHiddenInputs();
+                        renderSummary();
                     });
                 });
             };
 
-            addButton.addEventListener('click', () => {
-                const index = itemsContainer.querySelectorAll('.order-item-row').length;
-                const html = template.innerHTML.replaceAll('__index__', index);
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = html.trim();
-                itemsContainer.appendChild(wrapper.firstElementChild);
-                attachRemoveHandler(itemsContainer);
+            const refreshFlavorAndPackage = () => {
+                const flavors = unique(filteredByType().map(product => product.flavor || 'Без вкус'));
+                setOptions(flavorSelect, flavors);
+
+                const packages = unique(filteredByTypeAndFlavor().map(product => product.package));
+                setOptions(packageSelect, packages);
+
+                renderStockHint();
+            };
+
+            const initSelectors = () => {
+                const types = unique(products.map(product => product.type));
+                setOptions(typeSelect, types);
+                refreshFlavorAndPackage();
+            };
+
+            typeSelect.addEventListener('change', refreshFlavorAndPackage);
+            flavorSelect.addEventListener('change', () => {
+                const packages = unique(filteredByTypeAndFlavor().map(product => product.package));
+                setOptions(packageSelect, packages);
+                renderStockHint();
+            });
+            packageSelect.addEventListener('change', renderStockHint);
+
+            addProductBtn.addEventListener('click', () => {
+                const product = currentProduct();
+                const quantity = Number(qtyInput.value || 0);
+
+                if (!product) {
+                    alert('Моля, изберете продукт.');
+                    return;
+                }
+
+                if (quantity <= 0) {
+                    alert('Количеството трябва да е поне 1.');
+                    return;
+                }
+
+                if (quantity > product.stock) {
+                    alert(`Налични са само ${product.stock} бр.`);
+                    return;
+                }
+
+                selectedProducts.set(product.id, quantity);
+                syncHiddenInputs();
+                renderSummary();
+                qtyInput.value = '1';
+
+                finalConfirmationBox.classList.add('d-none');
+                submitOrderBtn.classList.add('d-none');
             });
 
-            attachRemoveHandler(itemsContainer);
+            finishOrderBtn.addEventListener('click', () => {
+                if (selectedProducts.size === 0) {
+                    alert('Добавете поне един продукт преди завършване.');
+                    return;
+                }
+
+                finalConfirmationBox.classList.remove('d-none');
+                submitOrderBtn.classList.add('d-none');
+            });
+
+            changeOrderBtn.addEventListener('click', () => {
+                finalConfirmationBox.classList.add('d-none');
+            });
+
+            confirmSendBtn.addEventListener('click', () => {
+                submitOrderBtn.classList.remove('d-none');
+                submitOrderBtn.click();
+            });
+
+            initSelectors();
+            syncHiddenInputs();
+            renderSummary();
+
+            const preselectedItems = @Html.Raw(JsonSerializer.Serialize(Model.Items.Where(i => i.Quantity > 0)));
+            preselectedItems.forEach(item => {
+                if (item.quantity > 0) {
+                    selectedProducts.set(item.productId, item.quantity);
+                }
+            });
+            syncHiddenInputs();
+            renderSummary();
         })();
     </script>
 }

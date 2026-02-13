@@ -1,33 +1,33 @@
 @{
-    ViewData["Title"] = "Products";
+    ViewData["Title"] = "Продукти";
 }
 
-<h1>Product Operations</h1>
+<h1>Операции с продукти</h1>
 
 <section>
-    <h2>Scrap Product</h2>
+    <h2>Бракуване на продукт</h2>
     <form asp-action="Scrap" method="post">
-        <label>Product Id</label>
+        <label>Номер на продукт</label>
         <input type="number" name="ProductId" />
-        <label>Quantity</label>
+        <label>Количество</label>
         <input type="number" name="Quantity" />
-        <label>Reason</label>
+        <label>Причина</label>
         <input type="text" name="Reason" />
-        <button type="submit">Scrap</button>
+        <button type="submit">Бракувай</button>
     </form>
 </section>
 
 <section>
-    <h2>Replace Product</h2>
+    <h2>Замяна на продукт</h2>
     <form asp-action="Replace" method="post">
-        <label>Original Product Id</label>
+        <label>Оригинален продукт №</label>
         <input type="number" name="OriginalProductId" />
-        <label>Replacement Product Id</label>
+        <label>Заместващ продукт №</label>
         <input type="number" name="ReplacementProductId" />
-        <label>Quantity</label>
+        <label>Количество</label>
         <input type="number" name="Quantity" />
-        <label>Reason</label>
+        <label>Причина</label>
         <input type="text" name="Reason" />
-        <button type="submit">Replace</button>
+        <button type="submit">Замени</button>
     </form>
 </section>

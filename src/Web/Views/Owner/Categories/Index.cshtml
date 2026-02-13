@@ -1,3 +1,3 @@
 @model IEnumerable<IceCreamM12.Domain.Entities.Category>
-<h1>Categories</h1><a asp-action="CreateCategory" class="btn btn-primary mb-2">Create</a>
-<table class="table"><thead><tr><th>Name</th><th>Description</th><th></th></tr></thead><tbody>@foreach(var c in Model){<tr><td>@c.Name</td><td>@c.Description</td><td><a asp-action="EditCategory" asp-route-id="@c.Id">Edit</a> | <a asp-action="DeleteCategory" asp-route-id="@c.Id">Delete</a></td></tr>}</tbody></table>
+<h1>Категории</h1><a asp-action="CreateCategory" class="btn btn-primary mb-2">Създай</a>
+<table class="table"><thead><tr><th>Име</th><th>Описание</th><th></th></tr></thead><tbody>@foreach(var c in Model){<tr><td>@c.Name</td><td>@c.Description</td><td><a asp-action="EditCategory" asp-route-id="@c.Id">Редакция</a> | <a asp-action="DeleteCategory" asp-route-id="@c.Id">Изтрий</a></td></tr>}</tbody></table>

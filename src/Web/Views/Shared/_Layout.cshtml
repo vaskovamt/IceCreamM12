@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bg">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,35 +14,35 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Products">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Products">Продукти</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Contact">Контакти</a></li>
 
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
                         if (User.IsInRole("Client"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="MyOrders">My Orders</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="NewOrder">New Order</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="MyOrders">Моите поръчки</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="NewOrder">Нова поръчка</a></li>
                         }
 
                         if (User.IsInRole("Worker") || User.IsInRole("Owner"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Dashboard">Worker Dashboard</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Orders">Orders</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Inventory">Inventory</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="DailyCheck">Daily Check</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Dashboard">Табло служител</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Orders">Поръчки</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Inventory">Склад</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="DailyCheck">Дневна проверка</a></li>
                         }
 
                         if (User.IsInRole("Owner"))
                         {
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Owner Dashboard</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Products">Products</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Categories">Categories</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Ingredients">Ingredients</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Inventory">Inventory</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Orders">Orders</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Reports</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Табло собственик</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Products">Продукти</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Categories">Категории</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Ingredients">Суровини</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Inventory">Склад</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Orders">Поръчки</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Отчети</a></li>
                         }
                     }
                 </ul>

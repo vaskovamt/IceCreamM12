@@ -7,7 +7,9 @@ using IceCreamM12.Infrastructure.Identity;
 using IceCreamM12.Infrastructure.Repositories;
 using IceCreamM12.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -46,6 +48,17 @@ builder.Services.AddScoped<IManagementService, ManagementService>();
 builder.Services.AddScoped<IProductionService, ProductionService>();
 
 var app = builder.Build();
+
+var bgCulture = new CultureInfo("bg-BG");
+bgCulture.NumberFormat.CurrencySymbol = "€";
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(bgCulture),
+    SupportedCultures = [bgCulture],
+    SupportedUICultures = [bgCulture]
+};
+
+app.UseRequestLocalization(localizationOptions);
 
 if (!app.Environment.IsDevelopment())
 {

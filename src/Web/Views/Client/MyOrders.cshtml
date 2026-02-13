@@ -1,9 +1,9 @@
 @model IceCreamM12.Web.Models.ViewModels.MyOrdersViewModel
-@{ ViewData["Title"] = "My Orders"; }
-<h1>My Orders</h1>
-@if (!Model.Orders.Any()) { <p>No orders yet.</p><a asp-action="NewOrder" class="btn btn-primary">New Order</a> }
+@{ ViewData["Title"] = "Моите поръчки"; }
+<h1>Моите поръчки</h1>
+@if (!Model.Orders.Any()) { <p>Все още няма поръчки.</p><a asp-action="NewOrder" class="btn btn-primary">Нова поръчка</a> }
 else {
-<table class="table table-striped"><thead><tr><th>#</th><th>Date</th><th>Status</th><th>Items</th><th>Total</th></tr></thead><tbody>
-@foreach(var o in Model.Orders){<tr><td>@o.OrderNumber</td><td>@o.OrderedAt.ToLocalTime()</td><td>@o.Status</td><td>@string.Join(", ", o.Items.Select(i => $"{i.Product?.Name} x{i.Quantity}"))</td><td>@o.TotalAmount.ToString("F2")</td></tr>}
+<table class="table table-striped"><thead><tr><th>#</th><th>Дата</th><th>Статус</th><th>Артикули</th><th>Общо</th></tr></thead><tbody>
+@foreach(var o in Model.Orders){<tr><td>@o.OrderNumber</td><td>@o.OrderedAt.ToLocalTime()</td><td>@o.Status</td><td>@string.Join(", ", o.Items.Select(i => $"{i.Product?.Name} x{i.Quantity}"))</td><td>@o.TotalAmount.ToString("C")</td></tr>}
 </tbody></table>
 }

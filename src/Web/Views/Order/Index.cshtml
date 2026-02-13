@@ -1,25 +1,25 @@
 @{
-    ViewData["Title"] = "Orders";
+    ViewData["Title"] = "Поръчки";
 }
 
-<h1>Order Decisions</h1>
+<h1>Управление на поръчки</h1>
 
 <section>
-    <h2>Approve Order</h2>
+    <h2>Одобряване на поръчка</h2>
     <form asp-action="Approve" method="post">
-        <label>Order Id</label>
+        <label>Номер на поръчка</label>
         <input type="number" name="OrderId" />
-        <button type="submit">Approve</button>
+        <button type="submit">Одобри</button>
     </form>
 </section>
 
 <section>
-    <h2>Reject Order</h2>
+    <h2>Отказ на поръчка</h2>
     <form asp-action="Reject" method="post">
-        <label>Order Id</label>
+        <label>Номер на поръчка</label>
         <input type="number" name="OrderId" />
-        <label>Rejection Reason</label>
+        <label>Причина за отказ</label>
         <input type="text" name="RejectionReason" />
-        <button type="submit">Reject</button>
+        <button type="submit">Откажи</button>
     </form>
 </section>

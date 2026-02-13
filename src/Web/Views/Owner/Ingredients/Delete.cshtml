@@ -1,2 +1,2 @@
 @model IceCreamM12.Domain.Entities.Ingredient
-<h1>Delete Ingredient</h1><p>Delete @Model.Name?</p><form asp-action="DeleteIngredient" method="post">@Html.AntiForgeryToken()<input type="hidden" asp-for="Id"/><button class="btn btn-danger">Delete</button></form>
+<h1>Изтриване на суровина</h1><p>Да се изтрие ли @Model.Name?</p><form asp-action="DeleteIngredient" method="post">@Html.AntiForgeryToken()<input type="hidden" asp-for="Id"/><button class="btn btn-danger">Изтрий</button></form>

@@ -1,20 +1,20 @@
 @{
-    ViewData["Title"] = "Owner Admin";
+    ViewData["Title"] = "Администрация собственик";
 }
 
-<h1>Owner Administration</h1>
+<h1>Администрация на собственика</h1>
 
-<p>Manage inventory adjustments and audit entries.</p>
+<p>Управление на складови корекции и одитни записи.</p>
 
 <section>
-    <h2>Record inventory change</h2>
+    <h2>Запиши промяна в склада</h2>
     <form asp-action="RecordInventoryChange" method="post">
-        <label>Product Id</label>
+        <label>Номер на продукт</label>
         <input type="number" name="ProductId" />
-        <label>Quantity</label>
+        <label>Количество</label>
         <input type="number" name="Quantity" />
-        <label>Reason</label>
+        <label>Причина</label>
         <input type="text" name="Reason" />
-        <button type="submit">Record Change</button>
+        <button type="submit">Запиши промяната</button>
     </form>
 </section>

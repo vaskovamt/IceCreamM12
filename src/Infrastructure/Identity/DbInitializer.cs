@@ -51,10 +51,8 @@ public static class DbInitializer
         if (!await context.Categories.AnyAsync())
         {
             context.Categories.AddRange(
-                new Category { Name = "Scoops", Description = "Hand-scooped ice cream servings." },
-                new Category { Name = "Cones", Description = "Ice cream served in cones." },
-                new Category { Name = "Pints", Description = "Take-home pints." },
-                new Category { Name = "Sundaes", Description = "Signature sundaes with toppings." }
+                new Category { Name = "IceCream", Description = "All ice cream products." },
+                new Category { Name = "Cones", Description = "All cone products." }
             );
 
             await context.SaveChangesAsync();

@@ -34,4 +34,87 @@
 <div class="mb-3"><label asp-for="CustomerEmail" class="form-label"></label><input asp-for="CustomerEmail" class="form-control"/></div>
 <button class="btn btn-primary">Submit</button>
 </form>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+
+<template id="order-item-template">
+    <div class="row g-2 order-item-row" data-index="__index__">
+        <div class="col-md-7">
+            <label class="form-label" for="Items___index___ProductId">Продукт</label>
+            <select class="form-select" id="Items___index___ProductId" name="Items[__index__].ProductId">
+                <option value="">Изберете продукт</option>
+                @foreach (var product in Model.AvailableProducts)
+                {
+                    <option value="@product.Id">@product.Name</option>
+                }
+            </select>
+            <span class="text-danger field-validation-valid" data-valmsg-for="Items[__index__].ProductId" data-valmsg-replace="true"></span>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="Items___index___Quantity">Количество</label>
+            <input class="form-control" min="1" type="number" id="Items___index___Quantity" name="Items[__index__].Quantity" value="1" />
+            <span class="text-danger field-validation-valid" data-valmsg-for="Items[__index__].Quantity" data-valmsg-replace="true"></span>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="button" class="btn btn-outline-danger w-100 remove-item">Премахни</button>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const itemsContainer = document.getElementById('order-items');
+            const template = document.getElementById('order-item-template');
+            const addButton = document.getElementById('add-item');
+
+            const attachRemoveHandler = (root) => {
+                root.querySelectorAll('.remove-item').forEach(button => {
+                    button.onclick = () => {
+                        const rows = itemsContainer.querySelectorAll('.order-item-row');
+                        if (rows.length === 1) {
+                            return;
+                        }
+
+                        button.closest('.order-item-row').remove();
+                        reindexRows();
+                    };
+                });
+            };
+
+            const reindexRows = () => {
+                const rows = itemsContainer.querySelectorAll('.order-item-row');
+                rows.forEach((row, index) => {
+                    row.dataset.index = index;
+                    row.querySelectorAll('input, select, span, label').forEach(el => {
+                        if (el.name) {
+                            el.name = el.name.replace(/Items\[\d+\]/g, `Items[${index}]`);
+                        }
+
+                        if (el.id) {
+                            el.id = el.id.replace(/Items_\d+__/g, `Items_${index}__`);
+                        }
+
+                        if (el.getAttribute('for')) {
+                            el.setAttribute('for', el.getAttribute('for').replace(/Items_\d+__/g, `Items_${index}__`));
+                        }
+
+                        if (el.dataset.valmsgFor) {
+                            el.dataset.valmsgFor = el.dataset.valmsgFor.replace(/Items\[\d+\]/g, `Items[${index}]`);
+                        }
+                    });
+                });
+            };
+
+            addButton.addEventListener('click', () => {
+                const index = itemsContainer.querySelectorAll('.order-item-row').length;
+                const html = template.innerHTML.replaceAll('__index__', index);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html.trim();
+                itemsContainer.appendChild(wrapper.firstElementChild);
+                attachRemoveHandler(itemsContainer);
+            });
+
+            attachRemoveHandler(itemsContainer);
+        })();
+    </script>
+}

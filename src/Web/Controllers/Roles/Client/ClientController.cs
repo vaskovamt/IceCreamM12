@@ -78,6 +78,11 @@ public class ClientController : Controller
 
         if (!ModelState.IsValid)
         {
+            if (model.Items.Count == 0)
+            {
+                model.Items.Add(new NewOrderItemViewModel());
+            }
+
             return View(model);
         }
 

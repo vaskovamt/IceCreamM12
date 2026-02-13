@@ -33,11 +33,17 @@ public class ManagementService : IManagementService
     public async Task<WorkerDashboardData> GetWorkerDashboardAsync(CancellationToken cancellationToken)
     {
         var today = DateTime.UtcNow.Date;
+        var orders = await GetOrdersAsync(null, cancellationToken);
+        var operations = await GetRecentAuditsAsync(25, cancellationToken);
+
         return new WorkerDashboardData
         {
-            PendingOrdersCount = await _dbContext.Orders.CountAsync(o => o.Status.StartsWith("Pending"), cancellationToken),
+            PendingOrdersCount = orders.Count(o => o.Status.StartsWith("Pending")),
             LowStockProducts = await GetLowStockProductsAsync(cancellationToken),
-            TodayOperationsCount = await _dbContext.InventoryAudits.CountAsync(a => a.PerformedAt >= today, cancellationToken)
+            TodayOperationsCount = await _dbContext.InventoryAudits.CountAsync(a => a.PerformedAt >= today, cancellationToken),
+            Orders = orders,
+            Operations = operations,
+            Ingredients = await GetIngredientsAsync(cancellationToken)
         };
     }
 

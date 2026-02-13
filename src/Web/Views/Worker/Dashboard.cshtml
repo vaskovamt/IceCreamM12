@@ -1,3 +1,127 @@
 @model IceCreamM12.Web.Models.ViewModels.WorkerDashboardViewModel
+@{ ViewData["Title"] = "Табло служител"; }
+
 <h1>Табло служител</h1>
-<div class="row g-3"><div class="col-md-4"><div class="card"><div class="card-body"><h6>Чакащи поръчки</h6><h3>@Model.Data.PendingOrdersCount</h3></div></div></div><div class="col-md-4"><div class="card"><div class="card-body"><h6>Ниска наличност</h6><h3>@Model.Data.LowStockProducts.Count</h3></div></div></div><div class="col-md-4"><div class="card"><div class="card-body"><h6>Операции днес</h6><h3>@Model.Data.TodayOperationsCount</h3></div></div></div></div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Чакащи поръчки</h6>
+                <h3>@Model.Data.PendingOrdersCount</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Ниска наличност</h6>
+                <h3>@Model.Data.LowStockProducts.Count</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Операции днес</h6>
+                <h3>@Model.Data.TodayOperationsCount</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6>Всички поръчки</h6>
+                <h3>@Model.Data.Orders.Count</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Последни операции</h4>
+<table class="table table-sm table-bordered">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Продукт</th>
+            <th>Промяна</th>
+            <th>Причина</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var operation in Model.Data.Operations)
+        {
+            <tr>
+                <td>@operation.PerformedAt.ToLocalTime()</td>
+                <td>@operation.InventoryItem?.Product?.Name</td>
+                <td>@operation.QuantityChange</td>
+                <td>@operation.Reason</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Всички поръчки</h4>
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Клиент</th>
+            <th>Статус</th>
+            <th>Общо</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model.Data.Orders)
+        {
+            <tr>
+                <td>@order.OrderNumber</td>
+                <td>@order.CustomerName</td>
+                <td>@order.Status</td>
+                <td>@order.TotalAmount.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Продукти с ниска наличност</h4>
+<table class="table table-sm table-striped">
+    <thead>
+        <tr>
+            <th>Продукт</th>
+            <th>Кол.</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Data.LowStockProducts)
+        {
+            <tr>
+                <td>@product.Name</td>
+                <td>@(product.InventoryItem?.QuantityOnHand ?? 0)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Суровини (Ingredients)</h4>
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th>Име</th>
+            <th>Мярка</th>
+            <th>Наличност</th>
+            <th>Минимум</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ingredient in Model.Data.Ingredients)
+        {
+            <tr>
+                <td>@ingredient.Name</td>
+                <td>@ingredient.Unit</td>
+                <td>@ingredient.QuantityOnHand</td>
+                <td>@ingredient.ReorderLevel</td>
+            </tr>
+        }
+    </tbody>
+</table>

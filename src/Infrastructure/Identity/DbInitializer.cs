@@ -209,9 +209,10 @@ public static class DbInitializer
             }
         }
 
-        HashSet<int> existingInventoryProductIds = await context.InventoryItems
-            .Select(inventoryItem => inventoryItem.ProductId)
-            .ToHashSetAsync();
+        HashSet<int> existingInventoryProductIds = new(
+            await context.InventoryItems
+                .Select(inventoryItem => inventoryItem.ProductId)
+                .ToListAsync());
 
         var missingInventoryItems = productStocks
             .Where(stock => existingProductsByName.ContainsKey(stock.ProductName))

@@ -2,9 +2,29 @@
     ViewData["Title"] = "Client Dashboard";
 }
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h1 class="card-title">Client Dashboard</h1>
-        <p class="card-text">View order history, loyalty rewards, and personalized recommendations.</p>
+<div class="mb-4">
+    <h1 class="mb-2">Client Dashboard</h1>
+    <p class="text-muted mb-0">Тук клиентите могат да създават нови поръчки и да следят статусите на вече подадените заявки.</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Нова поръчка</h5>
+                <p class="card-text text-muted">Изберете продукти по тип, вкус и разфасовка и подайте заявката за одобрение.</p>
+                <a asp-controller="Client" asp-action="NewOrder" class="btn btn-primary btn-sm">Създай поръчка</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Моите поръчки</h5>
+                <p class="card-text text-muted">Следете история, статус и обща стойност на всички ваши поръчки.</p>
+                <a asp-controller="Client" asp-action="MyOrders" class="btn btn-outline-primary btn-sm">Виж поръчките</a>
+            </div>
+        </div>
     </div>
 </div>

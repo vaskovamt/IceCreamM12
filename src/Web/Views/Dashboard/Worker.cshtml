@@ -2,9 +2,39 @@
     ViewData["Title"] = "Worker Dashboard";
 }
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <h1 class="card-title">Worker Dashboard</h1>
-        <p class="card-text">Track production tasks, inventory levels, and daily prep schedules.</p>
+<div class="mb-4">
+    <h1 class="mb-2">Worker Dashboard</h1>
+    <p class="text-muted mb-0">Бърз достъп до ежедневните задачи: поръчки, складови корекции и дневна проверка.</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Обработка на поръчки</h5>
+                <p class="card-text text-muted">Преглеждайте поръчки със статус „Pending" и ги обработвайте своевременно.</p>
+                <a asp-controller="Worker" asp-action="Orders" class="btn btn-primary btn-sm">Отвори поръчки</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Складови операции</h5>
+                <p class="card-text text-muted">Изпълнявайте зареждане, бракуване и замяна според текущите наличности.</p>
+                <a asp-controller="Worker" asp-action="Inventory" class="btn btn-outline-primary btn-sm">Инвентар</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Дневна проверка</h5>
+                <p class="card-text text-muted">Сверявайте системните количества с реалната наличност в края на смяната.</p>
+                <a asp-controller="Worker" asp-action="DailyCheck" class="btn btn-outline-primary btn-sm">Daily Check</a>
+            </div>
+        </div>
     </div>
 </div>

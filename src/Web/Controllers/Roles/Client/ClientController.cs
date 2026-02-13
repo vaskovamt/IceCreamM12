@@ -42,24 +42,45 @@ public class ClientController : Controller
     public async Task<IActionResult> NewOrder(NewOrderViewModel model, CancellationToken cancellationToken)
     {
         model.AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken);
+        model.Items ??= [];
 
-        if (model.Quantity <= 0)
+        model.Items = model.Items
+            .Where(item => item.ProductId > 0 || item.Quantity > 0)
+            .ToList();
+
+        if (model.Items.Count == 0)
         {
-            ModelState.AddModelError(nameof(model.Quantity), "Количеството трябва да е по-голямо от 0.");
+            ModelState.AddModelError(nameof(model.Items), "Добавете поне един продукт към поръчката.");
         }
 
-        var selectedProduct = model.AvailableProducts.FirstOrDefault(p => p.Id == model.ProductId);
-        if (selectedProduct?.InventoryItem is null)
+        foreach (var item in model.Items.Select((value, index) => new { value, index }))
         {
-            ModelState.AddModelError(nameof(model.ProductId), "Моля, изберете наличен продукт.");
-        }
-        else if (model.Quantity > selectedProduct.InventoryItem.QuantityOnHand)
-        {
-            ModelState.AddModelError(nameof(model.Quantity), $"Налични са само {selectedProduct.InventoryItem.QuantityOnHand} бр.");
+            var selectedProduct = model.AvailableProducts.FirstOrDefault(p => p.Id == item.value.ProductId);
+            if (selectedProduct?.InventoryItem is null)
+            {
+                ModelState.AddModelError($"Items[{item.index}].ProductId", "Моля, изберете наличен продукт.");
+                continue;
+            }
+
+            if (item.value.Quantity <= 0)
+            {
+                ModelState.AddModelError($"Items[{item.index}].Quantity", "Количеството трябва да е по-голямо от 0.");
+                continue;
+            }
+
+            if (item.value.Quantity > selectedProduct.InventoryItem.QuantityOnHand)
+            {
+                ModelState.AddModelError($"Items[{item.index}].Quantity", $"Налични са само {selectedProduct.InventoryItem.QuantityOnHand} бр. за {selectedProduct.Name}.");
+            }
         }
 
         if (!ModelState.IsValid)
         {
+            if (model.Items.Count == 0)
+            {
+                model.Items.Add(new NewOrderItemViewModel());
+            }
+
             return View(model);
         }
 
@@ -73,9 +94,13 @@ public class ClientController : Controller
                 ? customerEmail
                 : model.CustomerName.Trim();
 
+            var orderItems = model.Items
+                .GroupBy(i => i.ProductId)
+                .Select(group => new OrderProductRequest(group.Key, group.Sum(item => item.Quantity)))
+                .ToList();
+
             var order = await _orderService.CreatePendingOrderAsync(
-                model.ProductId,
-                model.Quantity,
+                orderItems,
                 customerName,
                 customerEmail,
                 cancellationToken);

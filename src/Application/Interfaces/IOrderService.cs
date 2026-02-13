@@ -11,8 +11,7 @@ public interface IOrderService
         CancellationToken cancellationToken);
 
     Task<Order> CreatePendingOrderAsync(
-        int productId,
-        int quantity,
+        IReadOnlyCollection<OrderProductRequest> products,
         string customerName,
         string customerEmail,
         CancellationToken cancellationToken);
@@ -28,3 +27,5 @@ public interface IOrderService
         string? performedByUserId,
         CancellationToken cancellationToken);
 }
+
+public sealed record OrderProductRequest(int ProductId, int Quantity);

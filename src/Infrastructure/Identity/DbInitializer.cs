@@ -106,11 +106,11 @@ public static class DbInitializer
             ("8.000kg", 29.14m)
         ];
 
-        (string Size, decimal Price)[] cones =
+        (string Name, decimal Price)[] cones =
         [
-            ("малка", 0.05m),
-            ("средна", 0.10m),
-            ("голяма", 0.15m)
+            ("Вафлено рогче", 0.05m),
+            ("Вафлена Чашка", 0.10m),
+            ("Захарно рогче", 0.15m)
         ];
 
         var seededProducts = new List<Product>();
@@ -135,15 +135,42 @@ public static class DbInitializer
             }
         }
 
-        foreach ((string size, decimal price) in cones)
+        foreach ((string coneName, decimal price) in cones)
         {
             seededProducts.Add(new Product
             {
-                Name = $"Фунийка - {size}",
-                Description = $"Размер: {size}",
+                Name = $"Фунийка - {coneName}",
+                Description = $"Тип фунийка: {coneName}",
                 Price = price,
                 CategoryId = conesCategoryId
             });
+        }
+
+        Dictionary<string, string> legacyConeNames = new()
+        {
+            ["Фунийка - малка"] = "Фунийка - Вафлено рогче",
+            ["Фунийка - средна"] = "Фунийка - Вафлена Чашка",
+            ["Фунийка - голяма"] = "Фунийка - Захарно рогче"
+        };
+
+        List<Product> legacyConeProducts = await context.Products
+            .Where(product => legacyConeNames.Keys.Contains(product.Name))
+            .ToListAsync();
+
+        foreach (Product legacyConeProduct in legacyConeProducts)
+        {
+            if (!legacyConeNames.TryGetValue(legacyConeProduct.Name, out string? updatedName))
+            {
+                continue;
+            }
+
+            legacyConeProduct.Name = updatedName;
+            legacyConeProduct.Description = $"Тип фунийка: {updatedName.Replace("Фунийка - ", string.Empty)}";
+        }
+
+        if (legacyConeProducts.Count > 0)
+        {
+            await context.SaveChangesAsync();
         }
 
         var productStocks = new List<(string ProductName, int Quantity)>
@@ -196,9 +223,9 @@ public static class DbInitializer
             ("Сладолед 8.000kg - ПЪПЕШ", 2),
             ("Сладолед 8.000kg - КАРАМЕЛ", 10),
             ("Сладолед 8.000kg - ЛЕШНИК", 4),
-            ("Фунийка - малка", 1320),
-            ("Фунийка - средна", 860),
-            ("Фунийка - голяма", 420)
+            ("Фунийка - Вафлено рогче", 1320),
+            ("Фунийка - Вафлена Чашка", 860),
+            ("Фунийка - Захарно рогче", 420)
         };
 
         Dictionary<string, Product> existingProductsByName = await context.Products

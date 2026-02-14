@@ -114,7 +114,7 @@
                 <div class="col-md-3">
                     <div class="p-3 bg-light rounded-3 h-100">
                         <div class="text-muted small">Прогнозна стойност</div>
-                        <div class="fs-5 fw-bold" id="summary-total-amount">0,00 лв.</div>
+                        <div class="fs-5 fw-bold" id="summary-total-amount">0,00 €</div>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -216,7 +216,7 @@
 
             const currencyFormatter = new Intl.NumberFormat('bg-BG', {
                 style: 'currency',
-                currency: 'BGN'
+                currency: 'EUR'
             });
 
             const formatCurrency = (value) => currencyFormatter.format(value ?? 0);

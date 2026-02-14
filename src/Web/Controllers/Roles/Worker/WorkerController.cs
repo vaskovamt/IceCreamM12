@@ -30,14 +30,12 @@ public class WorkerController : Controller
         => View(new OrdersManagementViewModel { Orders = await _managementService.GetPendingOrdersAsync(cancellationToken), StatusFilter = "Pending" });
 
     [HttpGet]
-    public async Task<IActionResult> MyOrders(CancellationToken cancellationToken)
-    {
-        var email = User.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(email)) return Challenge();
+    public async Task<IActionResult> OrderHistory(CancellationToken cancellationToken)
+        => View(new MyOrdersViewModel { Orders = await _managementService.GetOrdersAsync(null, cancellationToken) });
 
-        var orders = await _orderService.GetOrdersByCustomerEmailAsync(email, cancellationToken);
-        return View(new MyOrdersViewModel { Orders = orders });
-    }
+    [HttpGet]
+    public Task<IActionResult> MyOrders(CancellationToken cancellationToken)
+        => Task.FromResult<IActionResult>(RedirectToAction(nameof(OrderHistory)));
 
     [HttpGet]
     public async Task<IActionResult> NewOrder(CancellationToken cancellationToken)
@@ -100,7 +98,7 @@ public class WorkerController : Controller
             await _orderService.ApproveOrderAsync(order.Id, User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken);
 
             TempData["Success"] = $"Поръчката {order.OrderNumber} е създадена и одобрена.";
-            return RedirectToAction(nameof(MyOrders));
+            return RedirectToAction(nameof(OrderHistory));
         }
         catch (Exception ex)
         {
@@ -116,7 +114,7 @@ public class WorkerController : Controller
         if (order is null)
         {
             TempData["Error"] = "Поръчката не е намерена.";
-            return RedirectToAction(nameof(MyOrders));
+            return RedirectToAction(nameof(OrderHistory));
         }
 
         if (!CanManageOrder(order))
@@ -155,7 +153,7 @@ public class WorkerController : Controller
         if (existingOrder is null)
         {
             TempData["Error"] = "Поръчката не е намерена.";
-            return RedirectToAction(nameof(MyOrders));
+            return RedirectToAction(nameof(OrderHistory));
         }
 
         if (!CanManageOrder(existingOrder))
@@ -196,7 +194,7 @@ public class WorkerController : Controller
                 cancellationToken);
 
             TempData["Success"] = $"Поръчка {existingOrder.OrderNumber} е обновена успешно.";
-            return RedirectToAction(nameof(MyOrders));
+            return RedirectToAction(nameof(OrderHistory));
         }
         catch (Exception ex)
         {

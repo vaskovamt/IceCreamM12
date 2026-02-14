@@ -1,93 +1,433 @@
+@using System.Text.Json
 @model IceCreamM12.Web.Models.ViewModels.NewOrderViewModel
 @{
-    ViewData["Title"] = "Нова поръчка от служител";
+    ViewData["Title"] = "Нова поръчка";
+
+    var productOptions = Model.AvailableProducts
+        .Select(product =>
+        {
+            var parts = (product.Name ?? string.Empty)
+                .Split(" - ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+            var type = parts.Length > 0 ? parts[0] : "Други";
+            var package = parts.Length > 1 ? parts[1] : string.Empty;
+            var flavor = "Без вкус";
+
+            if (type.StartsWith("Сладолед", StringComparison.OrdinalIgnoreCase))
+            {
+                var typeParts = type.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (typeParts.Length > 1)
+                {
+                    package = typeParts[^1];
+                    type = "Сладолед";
+                }
+
+                if (parts.Length > 1)
+                {
+                    flavor = parts[1];
+                }
+            }
+
+            if (type.StartsWith("Фунийка", StringComparison.OrdinalIgnoreCase))
+            {
+                type = "Фунийка";
+                flavor = "Без вкус";
+                package = parts.Length > 1 ? parts[1] : "Стандарт";
+            }
+
+            return new
+            {
+                id = product.Id,
+                name = product.Name,
+                type,
+                flavor,
+                package,
+                stock = product.InventoryItem?.QuantityOnHand ?? 0,
+                price = product.Price
+            };
+        })
+        .OrderBy(product => product.type)
+        .ThenBy(product => product.flavor)
+        .ThenBy(product => product.package)
+        .ToList();
+
+    var serializedProducts = JsonSerializer.Serialize(productOptions);
 }
 
-<h1>Нова поръчка от служител</h1>
-<p class="text-muted">Създадените тук поръчки се одобряват автоматично.</p>
-
-<form asp-action="NewOrder" method="post">
+<h1>Нова поръчка</h1>
+<p class="text-muted mb-4">Изберете продукти и прегледайте поръчката в удобен визуален формат, преди да я изпратите. Поръчката ще бъде одобрена автоматично.</p>
+<form asp-action="NewOrder" method="post" id="new-order-form">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="table-responsive mb-4">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>Продукт</th>
-                    <th>Наличност</th>
-                    <th>Цена</th>
-                    <th>Количество</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (var index = 0; index < Model.Items.Count; index++)
-                {
-                    var item = Model.Items[index];
-                    var product = Model.AvailableProducts.FirstOrDefault(p => p.Id == item.ProductId);
-                    <tr>
-                        <td>
-                            @product?.Name
-                            <input asp-for="Items[index].ProductId" type="hidden" />
-                        </td>
-                        <td>@(product?.InventoryItem?.QuantityOnHand ?? 0)</td>
-                        <td>@(product?.Price.ToString("C") ?? "-")</td>
-                        <td>
-                            <input asp-for="Items[index].Quantity" class="form-control" min="0" />
-                            <span asp-validation-for="Items[index].Quantity" class="text-danger"></span>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label asp-for="CustomerName" class="form-label"></label>
-            <input asp-for="CustomerName" class="form-control" />
-            <span asp-validation-for="CustomerName" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="CustomerEmail" class="form-label"></label>
-            <input asp-for="CustomerEmail" class="form-control" />
-            <span asp-validation-for="CustomerEmail" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="CompanyEik" class="form-label"></label>
-            <input asp-for="CompanyEik" class="form-control" />
-            <span asp-validation-for="CompanyEik" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="InvoiceAddress" class="form-label"></label>
-            <input asp-for="InvoiceAddress" class="form-control" />
-            <span asp-validation-for="InvoiceAddress" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="PaymentMethod" class="form-label"></label>
-            <select asp-for="PaymentMethod" class="form-select">
-                <option value="">-- Изберете --</option>
-                <option value="По банков път">По банков път</option>
-                <option value="В брой">В брой</option>
-                <option value="С карта">С карта</option>
-            </select>
-            <span asp-validation-for="PaymentMethod" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="VatNumber" class="form-label"></label>
-            <input asp-for="VatNumber" class="form-control" />
-            <span asp-validation-for="VatNumber" class="text-danger"></span>
-        </div>
-        <div class="col-md-6">
-            <label asp-for="ContactPhone" class="form-label"></label>
-            <input asp-for="ContactPhone" class="form-control" />
-            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+    <div class="card mb-3 shadow-sm border-0">
+        <div class="card-header">Добавяне на продукт</div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label" for="product-type">Тип продукт</label>
+                    <select class="form-select" id="product-type"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="product-flavor">Вкус</label>
+                    <select class="form-select" id="product-flavor"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="product-package">Разфасовка</label>
+                    <select class="form-select" id="product-package"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label" for="product-qty">Количество</label>
+                    <input type="number" min="1" class="form-control" id="product-qty" value="1" />
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="button" id="add-product" class="btn btn-primary">+</button>
+                </div>
+            </div>
+            <div class="form-text mt-2" id="stock-hint"></div>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary mt-4">Създай и одобри</button>
+    <div class="card mb-3 shadow-sm border-0">
+        <div class="card-header">Продукти в поръчката</div>
+        <div class="card-body" id="order-items-summary">
+            <p class="text-muted mb-0">Все още няма добавени продукти.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0" id="order-overview-card">
+        <div class="card-header">Обобщение</div>
+        <div class="card-body">
+            <div class="row g-3 text-center">
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Видове продукти</div>
+                        <div class="fs-4 fw-bold" id="summary-unique-products">0</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Общо количество</div>
+                        <div class="fs-4 fw-bold" id="summary-total-quantity">0</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Прогнозна стойност</div>
+                        <div class="fs-5 fw-bold" id="summary-total-amount">0,00 €</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Готовност</div>
+                        <div class="fs-6 fw-semibold" id="summary-status">Добавете продукти</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="hidden-order-items"></div>
+
+    <div class="mb-3">
+        <label asp-for="CustomerName" class="form-label"></label>
+        <input asp-for="CustomerName" class="form-control" />
+        <span asp-validation-for="CustomerName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CustomerEmail" class="form-label"></label>
+        <input asp-for="CustomerEmail" class="form-control" />
+        <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CompanyEik" class="form-label"></label>
+        <input asp-for="CompanyEik" class="form-control" maxlength="13" />
+        <span asp-validation-for="CompanyEik" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="InvoiceAddress" class="form-label"></label>
+        <input asp-for="InvoiceAddress" class="form-control" />
+        <span asp-validation-for="InvoiceAddress" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PaymentMethod" class="form-label"></label>
+        <select asp-for="PaymentMethod" class="form-select">
+            <option value="">-- Изберете --</option>
+            <option value="По банков път">По банков път</option>
+            <option value="В брой">В брой</option>
+            <option value="С карта">С карта</option>
+        </select>
+        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="VatNumber" class="form-label"></label>
+        <input asp-for="VatNumber" class="form-control" />
+        <span asp-validation-for="VatNumber" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ContactPhone" class="form-label"></label>
+        <input asp-for="ContactPhone" class="form-control" />
+        <span asp-validation-for="ContactPhone" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="button" id="finish-order" class="btn btn-success">Готово с избора</button>
+        <button type="submit" id="submit-order" class="btn btn-primary d-none">Изпрати поръчка</button>
+    </div>
+
+    <div class="alert alert-info mt-3 d-none" id="final-confirmation-box">
+        <p class="mb-2">Искате ли да промените нещо преди изпращане?</p>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" id="change-order">Да, ще променя</button>
+            <button type="button" class="btn btn-primary" id="confirm-send">Не, изпрати поръчката</button>
+        </div>
+    </div>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const products = @Html.Raw(serializedProducts);
+
+            const typeSelect = document.getElementById('product-type');
+            const flavorSelect = document.getElementById('product-flavor');
+            const packageSelect = document.getElementById('product-package');
+            const qtyInput = document.getElementById('product-qty');
+            const stockHint = document.getElementById('stock-hint');
+            const addProductBtn = document.getElementById('add-product');
+            const hiddenContainer = document.getElementById('hidden-order-items');
+            const summaryContainer = document.getElementById('order-items-summary');
+
+            const finishOrderBtn = document.getElementById('finish-order');
+            const submitOrderBtn = document.getElementById('submit-order');
+            const finalConfirmationBox = document.getElementById('final-confirmation-box');
+            const changeOrderBtn = document.getElementById('change-order');
+            const confirmSendBtn = document.getElementById('confirm-send');
+            const uniqueProductsSummary = document.getElementById('summary-unique-products');
+            const totalQuantitySummary = document.getElementById('summary-total-quantity');
+            const statusSummary = document.getElementById('summary-status');
+            const totalAmountSummary = document.getElementById('summary-total-amount');
+
+            const currencyFormatter = new Intl.NumberFormat('bg-BG', {
+                style: 'currency',
+                currency: 'EUR'
+            });
+
+            const formatCurrency = (value) => currencyFormatter.format(value ?? 0);
+
+            const selectedProducts = new Map();
+            const productById = new Map(products.map(product => [String(product.id), product]));
+
+            const unique = (values) => [...new Set(values)];
+
+            const setOptions = (select, values) => {
+                select.innerHTML = values
+                    .map(value => {
+                        if (typeof value === 'object') {
+                            return `<option value="${value.value}">${value.label}</option>`;
+                        }
+
+                        return `<option value="${value}">${value}</option>`;
+                    })
+                    .join('');
+
+                if (select.options.length > 0) {
+                    select.selectedIndex = 0;
+                }
+            };
+
+            const filteredByType = () => products.filter(product => product.type === typeSelect.value);
+
+            const filteredByTypeAndFlavor = () => filteredByType()
+                .filter(product => product.flavor === flavorSelect.value);
+
+            const currentProduct = () => {
+                const selectedProductId = packageSelect.value;
+                return selectedProductId ? productById.get(selectedProductId) ?? null : null;
+            };
+
+            const renderStockHint = () => {
+                const product = currentProduct();
+                if (!product) {
+                    stockHint.textContent = '';
+                    return;
+                }
+
+                stockHint.textContent = `Наличност: ${product.stock} бр. | Ед. цена: ${formatCurrency(product.price)}`;
+            };
+
+            const syncHiddenInputs = () => {
+                hiddenContainer.innerHTML = '';
+                Array.from(selectedProducts.entries()).forEach(([productId, quantity], index) => {
+                    hiddenContainer.insertAdjacentHTML('beforeend',
+                        `<input type="hidden" name="Items[${index}].ProductId" value="${productId}" />` +
+                        `<input type="hidden" name="Items[${index}].Quantity" value="${quantity}" />`);
+                });
+            };
+
+            const renderSummary = () => {
+                if (selectedProducts.size === 0) {
+                    summaryContainer.innerHTML = '<p class="text-muted mb-0">Все още няма добавени продукти.</p>';
+                    uniqueProductsSummary.textContent = '0';
+                    totalQuantitySummary.textContent = '0';
+                    totalAmountSummary.textContent = formatCurrency(0);
+                    statusSummary.textContent = 'Добавете продукти';
+                    statusSummary.className = 'fs-6 fw-semibold text-muted';
+                    return;
+                }
+
+                let totalAmount = 0;
+                const totalQuantity = Array.from(selectedProducts.values())
+                    .reduce((accumulator, quantity) => accumulator + quantity, 0);
+
+                const rows = Array.from(selectedProducts.entries()).map(([productId, quantity]) => {
+                    const product = products.find(p => p.id === Number(productId));
+                    if (!product) {
+                        return '';
+                    }
+
+                    const lineTotal = quantity * product.price;
+                    totalAmount += lineTotal;
+
+                    return `<tr>
+                        <td><span class="badge text-bg-primary">${product.type}</span></td>
+                        <td>${product.flavor}</td>
+                        <td><span class="badge text-bg-light border">${product.package}</span></td>
+                        <td>${formatCurrency(product.price)}</td>
+                        <td><span class="badge text-bg-success">${quantity}</span></td>
+                        <td>${formatCurrency(lineTotal)}</td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-selected" data-product-id="${product.id}">Премахни</button></td>
+                    </tr>`;
+                }).join('');
+
+                summaryContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Тип</th><th>Вкус</th><th>Разфасовка</th><th>Ед. цена</th><th>Количество</th><th>Общо</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+                uniqueProductsSummary.textContent = selectedProducts.size.toString();
+                totalQuantitySummary.textContent = totalQuantity.toString();
+                totalAmountSummary.textContent = formatCurrency(totalAmount);
+                statusSummary.textContent = 'Готова за преглед';
+                statusSummary.className = 'fs-6 fw-semibold text-success';
+
+                summaryContainer.querySelectorAll('.remove-selected').forEach(button => {
+                    button.addEventListener('click', () => {
+                        selectedProducts.delete(Number(button.dataset.productId));
+                        syncHiddenInputs();
+                        renderSummary();
+                    });
+                });
+            };
+
+            const refreshFlavorAndPackage = () => {
+                const flavors = unique(filteredByType().map(product => product.flavor));
+                setOptions(flavorSelect, flavors);
+
+                const packageProducts = filteredByTypeAndFlavor();
+                setOptions(packageSelect, packageProducts.map(product => ({
+                    value: String(product.id),
+                    label: `${product.package} (${formatCurrency(product.price)})`
+                })));
+
+                addProductBtn.disabled = packageProducts.length === 0;
+                renderStockHint();
+            };
+
+            const initSelectors = () => {
+                const types = unique(products.map(product => product.type));
+                setOptions(typeSelect, types);
+                refreshFlavorAndPackage();
+            };
+
+            typeSelect.addEventListener('change', refreshFlavorAndPackage);
+            flavorSelect.addEventListener('change', () => {
+                const packageProducts = filteredByTypeAndFlavor();
+                setOptions(packageSelect, packageProducts.map(product => ({
+                    value: String(product.id),
+                    label: `${product.package} (${formatCurrency(product.price)})`
+                })));
+                addProductBtn.disabled = packageProducts.length === 0;
+                renderStockHint();
+            });
+            packageSelect.addEventListener('change', renderStockHint);
+
+            addProductBtn.addEventListener('click', () => {
+                let product = currentProduct();
+                const quantity = Number(qtyInput.value || 0);
+
+                if (!product) {
+                    if (packageSelect.options.length > 0) {
+                        packageSelect.selectedIndex = 0;
+                    }
+
+                    const fallbackProduct = currentProduct();
+                    if (!fallbackProduct) {
+                        alert('Няма наличен продукт за избраните филтри.');
+                        return;
+                    }
+
+                    product = fallbackProduct;
+                }
+
+                if (quantity <= 0) {
+                    alert('Количеството трябва да е поне 1.');
+                    return;
+                }
+
+                const existingQuantity = selectedProducts.get(product.id) ?? 0;
+                const nextQuantity = existingQuantity + quantity;
+
+                const hasTrackableStock = Number.isFinite(product.stock) && product.stock > 0;
+                if (hasTrackableStock && nextQuantity > product.stock) {
+                    const remaining = Math.max(product.stock - existingQuantity, 0);
+                    alert(`Налични са само ${product.stock} бр. (можете да добавите още ${remaining} бр.)`);
+                    return;
+                }
+
+                selectedProducts.set(product.id, nextQuantity);
+                syncHiddenInputs();
+                renderSummary();
+                qtyInput.value = '1';
+
+                finalConfirmationBox.classList.add('d-none');
+                submitOrderBtn.classList.add('d-none');
+            });
+
+            finishOrderBtn.addEventListener('click', () => {
+                if (selectedProducts.size === 0) {
+                    alert('Добавете поне един продукт преди завършване.');
+                    return;
+                }
+
+                finalConfirmationBox.classList.remove('d-none');
+                submitOrderBtn.classList.add('d-none');
+            });
+
+            changeOrderBtn.addEventListener('click', () => {
+                finalConfirmationBox.classList.add('d-none');
+            });
+
+            confirmSendBtn.addEventListener('click', () => {
+                submitOrderBtn.classList.remove('d-none');
+                submitOrderBtn.click();
+            });
+
+            initSelectors();
+            syncHiddenInputs();
+            renderSummary();
+
+            const preselectedItems = @Html.Raw(JsonSerializer.Serialize(Model.Items.Where(i => i.Quantity > 0)));
+            preselectedItems.forEach(item => {
+                if (item.quantity > 0) {
+                    selectedProducts.set(item.productId, item.quantity);
+                }
+            });
+            syncHiddenInputs();
+            renderSummary();
+        })();
+    </script>
 }

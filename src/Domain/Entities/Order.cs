@@ -24,6 +24,24 @@ public class Order
     [MaxLength(320)]
     public string? CustomerEmail { get; set; }
 
+    [Required]
+    [MaxLength(15)]
+    public string CompanyEik { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(150)]
+    public string InvoiceAddress { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(50)]
+    public string PaymentMethod { get; set; } = string.Empty;
+
+    [MaxLength(20)]
+    public string? VatNumber { get; set; }
+
+    [MaxLength(20)]
+    public string? ContactPhone { get; set; }
+
     [Column(TypeName = "decimal(12,2)")]
     public decimal TotalAmount { get; set; }
 

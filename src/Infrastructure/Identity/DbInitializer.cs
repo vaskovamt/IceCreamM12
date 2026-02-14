@@ -25,6 +25,8 @@ public static class DbInitializer
             await context.Database.EnsureCreatedAsync();
         }
 
+        await EnsureOrderInvoiceColumnsAsync(context);
+
         string[] roles = ["Owner", "Worker", "Client"];
 
         foreach (string role in roles)
@@ -409,4 +411,52 @@ public static class DbInitializer
             .GroupBy(category => category.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
     }
+
+    private static async Task EnsureOrderInvoiceColumnsAsync(ApplicationDbContext context)
+    {
+        var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        await using var command = context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "PRAGMA table_info('Orders');";
+
+        if (command.Connection?.State != System.Data.ConnectionState.Open)
+        {
+            await command.Connection!.OpenAsync();
+        }
+
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (!reader.IsDBNull(1))
+            {
+                existingColumns.Add(reader.GetString(1));
+            }
+        }
+
+        if (!existingColumns.Contains("CompanyEik"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN CompanyEik TEXT NOT NULL DEFAULT '';");
+        }
+
+        if (!existingColumns.Contains("InvoiceAddress"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN InvoiceAddress TEXT NOT NULL DEFAULT '';");
+        }
+
+        if (!existingColumns.Contains("PaymentMethod"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN PaymentMethod TEXT NOT NULL DEFAULT '';");
+        }
+
+        if (!existingColumns.Contains("VatNumber"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN VatNumber TEXT NULL;");
+        }
+
+        if (!existingColumns.Contains("ContactPhone"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN ContactPhone TEXT NULL;");
+        }
+    }
+
 }

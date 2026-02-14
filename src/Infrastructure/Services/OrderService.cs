@@ -35,6 +35,11 @@ public class OrderService : IOrderService
         IReadOnlyCollection<OrderProductRequest> products,
         string customerName,
         string customerEmail,
+        string companyEik,
+        string invoiceAddress,
+        string paymentMethod,
+        string? vatNumber,
+        string? contactPhone,
         CancellationToken cancellationToken)
     {
         if (products.Count == 0)
@@ -91,6 +96,11 @@ public class OrderService : IOrderService
             Status = "Pending",
             CustomerName = customerName,
             CustomerEmail = customerEmail,
+            CompanyEik = companyEik,
+            InvoiceAddress = invoiceAddress,
+            PaymentMethod = paymentMethod,
+            VatNumber = string.IsNullOrWhiteSpace(vatNumber) ? null : vatNumber.Trim(),
+            ContactPhone = string.IsNullOrWhiteSpace(contactPhone) ? null : contactPhone.Trim(),
             TotalAmount = orderItems.Sum(item => item.UnitPrice * item.Quantity),
             Items = orderItems
         };

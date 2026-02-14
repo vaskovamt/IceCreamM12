@@ -236,8 +236,8 @@
             const filteredByTypeAndFlavor = () => filteredByType()
                 .filter(product => product.flavor === flavorSelect.value);
 
-            const currentProduct = () => filteredByTypeAndFlavor()
-                .find(product => product.package === packageSelect.value);
+            const currentProduct = () => products
+                .find(product => product.id === Number(packageSelect.value));
 
             const renderStockHint = () => {
                 const product = currentProduct();

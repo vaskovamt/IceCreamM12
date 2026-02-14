@@ -1,9 +1,85 @@
 @model IceCreamM12.Web.Models.ViewModels.MyOrdersViewModel
-@{ ViewData["Title"] = "Моите поръчки"; }
+@{
+    ViewData["Title"] = "Моите поръчки";
+    var totalOrders = Model.Orders.Count;
+    var totalItems = Model.Orders.Sum(order => order.Items.Sum(item => item.Quantity));
+    var totalAmount = Model.Orders.Sum(order => order.TotalAmount);
+}
+
 <h1>Моите поръчки</h1>
-@if (!Model.Orders.Any()) { <p>Все още няма поръчки.</p><a asp-action="NewOrder" class="btn btn-primary">Нова поръчка</a> }
-else {
-<table class="table table-striped"><thead><tr><th>#</th><th>Дата</th><th>Статус</th><th>Артикули</th><th>Общо</th></tr></thead><tbody>
-@foreach(var o in Model.Orders){<tr><td>@o.OrderNumber</td><td>@o.OrderedAt.ToLocalTime()</td><td>@o.Status</td><td>@string.Join(", ", o.Items.Select(i => $"{i.Product?.Name} x{i.Quantity}"))</td><td>@o.TotalAmount.ToString("C")</td></tr>}
-</tbody></table>
+<p class="text-muted mb-4">Ясен преглед на всички ваши заявки, количества и стойности.</p>
+
+@if (!Model.Orders.Any())
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-4">
+            <p class="mb-3">Все още няма поръчки.</p>
+            <a asp-action="NewOrder" class="btn btn-primary">Нова поръчка</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 bg-light h-100">
+                <div class="small text-muted">Брой поръчки</div>
+                <div class="fs-4 fw-bold">@totalOrders</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 bg-light h-100">
+                <div class="small text-muted">Общо артикули</div>
+                <div class="fs-4 fw-bold">@totalItems</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 bg-light h-100">
+                <div class="small text-muted">Обща стойност</div>
+                <div class="fs-4 fw-bold">@totalAmount.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        @foreach (var order in Model.Orders.OrderByDescending(o => o.OrderedAt))
+        {
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">Поръчка #@order.OrderNumber</h5>
+                                <div class="text-muted small">@order.OrderedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge text-bg-secondary mb-2">@order.Status</span>
+                                <div class="fw-semibold">@order.TotalAmount.ToString("C")</div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Продукт</th>
+                                        <th class="text-end">Количество</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.Product?.Name</td>
+                                            <td class="text-end"><span class="badge text-bg-primary">@item.Quantity</span></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }

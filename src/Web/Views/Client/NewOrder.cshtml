@@ -11,7 +11,7 @@
 
             var type = parts.Length > 0 ? parts[0] : "Други";
             var package = parts.Length > 1 ? parts[1] : string.Empty;
-            var flavor = string.Empty;
+            var flavor = "Без вкус";
 
             if (type.StartsWith("Сладолед", StringComparison.OrdinalIgnoreCase))
             {
@@ -206,6 +206,14 @@
             const uniqueProductsSummary = document.getElementById('summary-unique-products');
             const totalQuantitySummary = document.getElementById('summary-total-quantity');
             const statusSummary = document.getElementById('summary-status');
+            const totalAmountSummary = document.getElementById('summary-total-amount');
+
+            const currencyFormatter = new Intl.NumberFormat('bg-BG', {
+                style: 'currency',
+                currency: 'BGN'
+            });
+
+            const formatCurrency = (value) => currencyFormatter.format(value ?? 0);
 
             const selectedProducts = new Map();
 
@@ -304,7 +312,7 @@
             };
 
             const refreshFlavorAndPackage = () => {
-                const flavors = unique(filteredByType().map(product => product.flavor || 'Без вкус'));
+                const flavors = unique(filteredByType().map(product => product.flavor));
                 setOptions(flavorSelect, flavors);
 
                 const packages = unique(filteredByTypeAndFlavor().map(product => product.package));

@@ -14,6 +14,11 @@ public interface IOrderService
         IReadOnlyCollection<OrderProductRequest> products,
         string customerName,
         string customerEmail,
+        string companyEik,
+        string invoiceAddress,
+        string paymentMethod,
+        string? vatNumber,
+        string? contactPhone,
         CancellationToken cancellationToken);
 
     Task ApproveOrderAsync(

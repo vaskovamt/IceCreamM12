@@ -76,6 +76,12 @@ public class ClientController : Controller
             }
         }
 
+        string[] allowedPaymentMethods = ["По банков път", "В брой", "С карта"];
+        if (!allowedPaymentMethods.Contains(model.PaymentMethod))
+        {
+            ModelState.AddModelError(nameof(model.PaymentMethod), "Изберете валиден начин на плащане.");
+        }
+
         if (!ModelState.IsValid)
         {
             if (model.Items.Count == 0)
@@ -106,6 +112,11 @@ public class ClientController : Controller
                 orderItems,
                 customerName,
                 customerEmail,
+                model.CompanyEik.Trim(),
+                model.InvoiceAddress.Trim(),
+                model.PaymentMethod,
+                model.VatNumber,
+                model.ContactPhone,
                 cancellationToken);
 
             TempData["Success"] = $"Поръчката {order.OrderNumber} е създадена.";

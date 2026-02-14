@@ -98,10 +98,47 @@
     <div class="mb-3">
         <label asp-for="CustomerName" class="form-label"></label>
         <input asp-for="CustomerName" class="form-control" />
+        <span asp-validation-for="CustomerName" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="CustomerEmail" class="form-label"></label>
         <input asp-for="CustomerEmail" class="form-control" />
+        <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CompanyEik" class="form-label"></label>
+        <input asp-for="CompanyEik" class="form-control" maxlength="13" />
+        <span asp-validation-for="CompanyEik" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="InvoiceAddress" class="form-label"></label>
+        <input asp-for="InvoiceAddress" class="form-control" />
+        <span asp-validation-for="InvoiceAddress" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PaymentMethod" class="form-label"></label>
+        <select asp-for="PaymentMethod" class="form-select">
+            <option value="">-- Изберете --</option>
+            <option value="По банков път">По банков път</option>
+            <option value="В брой">В брой</option>
+            <option value="С карта">С карта</option>
+        </select>
+        <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="VatNumber" class="form-label"></label>
+        <input asp-for="VatNumber" class="form-control" />
+        <span asp-validation-for="VatNumber" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ContactPhone" class="form-label"></label>
+        <input asp-for="ContactPhone" class="form-control" />
+        <span asp-validation-for="ContactPhone" class="text-danger"></span>
     </div>
 
     <div class="d-flex gap-2">

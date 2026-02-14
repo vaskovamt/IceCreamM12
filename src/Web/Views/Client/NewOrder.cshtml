@@ -42,7 +42,8 @@
                 type,
                 flavor,
                 package,
-                stock = product.InventoryItem?.QuantityOnHand ?? 0
+                stock = product.InventoryItem?.QuantityOnHand ?? 0,
+                price = product.Price
             };
         })
         .OrderBy(product => product.type)
@@ -212,7 +213,13 @@
 
             const setOptions = (select, values) => {
                 select.innerHTML = values
-                    .map(value => `<option value="${value}">${value}</option>`)
+                    .map(value => {
+                        if (typeof value === 'object') {
+                            return `<option value="${value.value}">${value.label}</option>`;
+                        }
+
+                        return `<option value="${value}">${value}</option>`;
+                    })
                     .join('');
             };
 
@@ -231,7 +238,7 @@
                     return;
                 }
 
-                stockHint.textContent = `Наличност: ${product.stock} бр.`;
+                stockHint.textContent = `Наличност: ${product.stock} бр. | Ед. цена: ${formatCurrency(product.price)}`;
             };
 
             const syncHiddenInputs = () => {
@@ -262,6 +269,9 @@
                         return '';
                     }
 
+                    const lineTotal = quantity * product.price;
+                    totalAmount += lineTotal;
+
                     return `<tr>
                         <td><span class="badge text-bg-primary">${product.type}</span></td>
                         <td>${product.flavor || '-'}</td>
@@ -271,7 +281,13 @@
                     </tr>`;
                 }).join('');
 
-                summaryContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Тип</th><th>Вкус</th><th>Разфасовка</th><th>Количество</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+                summaryContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Тип</th><th>Вкус</th><th>Разфасовка</th><th>Ед. цена</th><th>Количество</th><th>Общо</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+                uniqueProductsSummary.textContent = selectedProducts.size.toString();
+                totalQuantitySummary.textContent = totalQuantity.toString();
+                totalAmountSummary.textContent = formatCurrency(totalAmount);
+                statusSummary.textContent = 'Готова за преглед';
+                statusSummary.className = 'fs-6 fw-semibold text-success';
 
                 uniqueProductsSummary.textContent = selectedProducts.size.toString();
                 totalQuantitySummary.textContent = totalQuantity.toString();
@@ -292,7 +308,13 @@
                 setOptions(flavorSelect, flavors);
 
                 const packages = unique(filteredByTypeAndFlavor().map(product => product.package));
-                setOptions(packageSelect, packages);
+                setOptions(packageSelect, packages.map(packageName => {
+                    const product = filteredByTypeAndFlavor().find(current => current.package === packageName);
+                    return {
+                        value: packageName,
+                        label: `${packageName} (${formatCurrency(product?.price ?? 0)})`
+                    };
+                }));
 
                 renderStockHint();
             };
@@ -306,7 +328,13 @@
             typeSelect.addEventListener('change', refreshFlavorAndPackage);
             flavorSelect.addEventListener('change', () => {
                 const packages = unique(filteredByTypeAndFlavor().map(product => product.package));
-                setOptions(packageSelect, packages);
+                setOptions(packageSelect, packages.map(packageName => {
+                    const product = filteredByTypeAndFlavor().find(current => current.package === packageName);
+                    return {
+                        value: packageName,
+                        label: `${packageName} (${formatCurrency(product?.price ?? 0)})`
+                    };
+                }));
                 renderStockHint();
             });
             packageSelect.addEventListener('change', renderStockHint);

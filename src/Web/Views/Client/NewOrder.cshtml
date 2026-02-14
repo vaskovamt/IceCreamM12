@@ -361,7 +361,8 @@
                     return;
                 }
 
-                if (quantity > product.stock) {
+                const hasTrackableStock = Number.isFinite(product.stock) && product.stock > 0;
+                if (hasTrackableStock && quantity > product.stock) {
                     alert(`Налични са само ${product.stock} бр.`);
                     return;
                 }

@@ -21,6 +21,21 @@ public interface IOrderService
         string? contactPhone,
         CancellationToken cancellationToken);
 
+    Task<Order?> GetOrderByIdAsync(int orderId, CancellationToken cancellationToken);
+
+    Task UpdateOrderAsync(
+        int orderId,
+        IReadOnlyCollection<OrderProductRequest> products,
+        string customerName,
+        string customerEmail,
+        string companyEik,
+        string invoiceAddress,
+        string paymentMethod,
+        string? vatNumber,
+        string? contactPhone,
+        string? performedByUserId,
+        CancellationToken cancellationToken);
+
     Task ApproveOrderAsync(
         int orderId,
         string? performedByUserId,

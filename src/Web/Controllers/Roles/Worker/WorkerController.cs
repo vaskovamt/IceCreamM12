@@ -29,6 +29,184 @@ public class WorkerController : Controller
     public async Task<IActionResult> Orders(CancellationToken cancellationToken)
         => View(new OrdersManagementViewModel { Orders = await _managementService.GetPendingOrdersAsync(cancellationToken), StatusFilter = "Pending" });
 
+    [HttpGet]
+    public async Task<IActionResult> MyOrders(CancellationToken cancellationToken)
+    {
+        var email = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(email)) return Challenge();
+
+        var orders = await _orderService.GetOrdersByCustomerEmailAsync(email, cancellationToken);
+        return View(new MyOrdersViewModel { Orders = orders });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> NewOrder(CancellationToken cancellationToken)
+    {
+        var model = new NewOrderViewModel
+        {
+            CustomerEmail = User.Identity?.Name,
+            AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken)
+        };
+
+        PopulateOrderItems(model);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> NewOrder(NewOrderViewModel model, CancellationToken cancellationToken)
+    {
+        model.AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken);
+        PopulateOrderItems(model);
+
+        ValidateOrderInput(model);
+        if (!ModelState.IsValid)
+        {
+            if (model.Items.Count == 0)
+            {
+                model.Items.Add(new NewOrderItemViewModel());
+            }
+
+            return View(model);
+        }
+
+        try
+        {
+            var customerEmail = string.IsNullOrWhiteSpace(model.CustomerEmail)
+                ? User.Identity?.Name ?? string.Empty
+                : model.CustomerEmail.Trim();
+
+            var customerName = string.IsNullOrWhiteSpace(model.CustomerName)
+                ? customerEmail
+                : model.CustomerName.Trim();
+
+            var orderItems = model.Items
+                .Where(i => i.Quantity > 0)
+                .GroupBy(i => i.ProductId)
+                .Select(group => new OrderProductRequest(group.Key, group.Sum(item => item.Quantity)))
+                .ToList();
+
+            var order = await _orderService.CreatePendingOrderAsync(
+                orderItems,
+                customerName,
+                customerEmail,
+                model.CompanyEik.Trim(),
+                model.InvoiceAddress.Trim(),
+                model.PaymentMethod,
+                model.VatNumber,
+                model.ContactPhone,
+                cancellationToken);
+
+            await _orderService.ApproveOrderAsync(order.Id, User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken);
+
+            TempData["Success"] = $"Поръчката {order.OrderNumber} е създадена и одобрена.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
+    }
+
+    [HttpGet("Worker/EditOrder/{orderId:int}")]
+    public async Task<IActionResult> EditOrder(int orderId, CancellationToken cancellationToken)
+    {
+        var order = await _orderService.GetOrderByIdAsync(orderId, cancellationToken);
+        if (order is null)
+        {
+            TempData["Error"] = "Поръчката не е намерена.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+        if (!CanManageOrder(order))
+        {
+            return Forbid();
+        }
+
+        var model = new NewOrderViewModel
+        {
+            CustomerName = order.CustomerName,
+            CustomerEmail = order.CustomerEmail,
+            CompanyEik = order.CompanyEik,
+            InvoiceAddress = order.InvoiceAddress,
+            PaymentMethod = order.PaymentMethod,
+            VatNumber = order.VatNumber,
+            ContactPhone = order.ContactPhone,
+            AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken),
+            Items = order.Items.Select(item => new NewOrderItemViewModel
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity
+            }).ToList()
+        };
+
+        PopulateOrderItems(model);
+        ViewData["OrderId"] = orderId;
+        ViewData["OrderNumber"] = order.OrderNumber;
+        return View(model);
+    }
+
+    [HttpPost("Worker/EditOrder/{orderId:int}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditOrder(int orderId, NewOrderViewModel model, CancellationToken cancellationToken)
+    {
+        var existingOrder = await _orderService.GetOrderByIdAsync(orderId, cancellationToken);
+        if (existingOrder is null)
+        {
+            TempData["Error"] = "Поръчката не е намерена.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+
+        if (!CanManageOrder(existingOrder))
+        {
+            return Forbid();
+        }
+
+        model.AvailableProducts = await _orderService.GetAvailableProductsAsync(cancellationToken);
+        PopulateOrderItems(model);
+
+        ValidateOrderInput(model);
+        if (!ModelState.IsValid)
+        {
+            ViewData["OrderId"] = orderId;
+            ViewData["OrderNumber"] = existingOrder.OrderNumber;
+            return View(model);
+        }
+
+        var orderItems = model.Items
+            .Where(i => i.Quantity > 0)
+            .GroupBy(i => i.ProductId)
+            .Select(group => new OrderProductRequest(group.Key, group.Sum(item => item.Quantity)))
+            .ToList();
+
+        try
+        {
+            await _orderService.UpdateOrderAsync(
+                orderId,
+                orderItems,
+                string.IsNullOrWhiteSpace(model.CustomerName) ? model.CustomerEmail?.Trim() ?? string.Empty : model.CustomerName.Trim(),
+                string.IsNullOrWhiteSpace(model.CustomerEmail) ? User.Identity?.Name ?? string.Empty : model.CustomerEmail.Trim(),
+                model.CompanyEik.Trim(),
+                model.InvoiceAddress.Trim(),
+                model.PaymentMethod,
+                model.VatNumber,
+                model.ContactPhone,
+                User.FindFirstValue(ClaimTypes.NameIdentifier),
+                cancellationToken);
+
+            TempData["Success"] = $"Поръчка {existingOrder.OrderNumber} е обновена успешно.";
+            return RedirectToAction(nameof(MyOrders));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            ViewData["OrderId"] = orderId;
+            ViewData["OrderNumber"] = existingOrder.OrderNumber;
+            return View(model);
+        }
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ApproveOrder(int orderId, CancellationToken cancellationToken)
@@ -121,5 +299,64 @@ public class WorkerController : Controller
         {
             TempData["Error"] = ex.Message;
         }
+    }
+
+    private static void PopulateOrderItems(NewOrderViewModel model)
+    {
+        var existingItems = model.Items.ToDictionary(item => item.ProductId, item => item.Quantity);
+        model.Items = model.AvailableProducts
+            .Select(product => new NewOrderItemViewModel
+            {
+                ProductId = product.Id,
+                Quantity = existingItems.GetValueOrDefault(product.Id, 0)
+            })
+            .ToList();
+    }
+
+    private void ValidateOrderInput(NewOrderViewModel model)
+    {
+        if (!model.Items.Any(item => item.Quantity > 0))
+        {
+            ModelState.AddModelError(nameof(model.Items), "Добавете количество за поне един продукт.");
+        }
+
+        foreach (var item in model.Items.Select((value, index) => new { value, index }))
+        {
+            if (item.value.Quantity < 0)
+            {
+                ModelState.AddModelError($"Items[{item.index}].Quantity", "Количеството не може да е отрицателно.");
+                continue;
+            }
+
+            if (item.value.Quantity == 0)
+            {
+                continue;
+            }
+
+            var selectedProduct = model.AvailableProducts.FirstOrDefault(p => p.Id == item.value.ProductId);
+            if (selectedProduct?.InventoryItem is null)
+            {
+                ModelState.AddModelError($"Items[{item.index}].ProductId", "Моля, изберете наличен продукт.");
+                continue;
+            }
+
+            if (item.value.Quantity > selectedProduct.InventoryItem.QuantityOnHand)
+            {
+                ModelState.AddModelError($"Items[{item.index}].Quantity", $"Налични са само {selectedProduct.InventoryItem.QuantityOnHand} бр. за {selectedProduct.Name}.");
+            }
+        }
+
+        string[] allowedPaymentMethods = ["По банков път", "В брой", "С карта"];
+        if (!allowedPaymentMethods.Contains(model.PaymentMethod))
+        {
+            ModelState.AddModelError(nameof(model.PaymentMethod), "Изберете валиден начин на плащане.");
+        }
+    }
+
+    private bool CanManageOrder(Domain.Entities.Order order)
+    {
+        var email = User.Identity?.Name;
+        return !string.IsNullOrWhiteSpace(email)
+               && string.Equals(order.CustomerEmail, email, StringComparison.OrdinalIgnoreCase);
     }
 }

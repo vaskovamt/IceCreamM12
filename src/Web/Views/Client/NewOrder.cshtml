@@ -54,11 +54,12 @@
 }
 
 <h1>Нова поръчка</h1>
+<p class="text-muted mb-4">Изберете продукти и прегледайте поръчката си в удобен визуален формат, преди да я изпратите.</p>
 <form asp-action="NewOrder" method="post" id="new-order-form">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="card mb-3">
+    <div class="card mb-3 shadow-sm border-0">
         <div class="card-header">Добавяне на продукт</div>
         <div class="card-body">
             <div class="row g-3 align-items-end">
@@ -86,10 +87,36 @@
         </div>
     </div>
 
-    <div class="card mb-3">
+    <div class="card mb-3 shadow-sm border-0">
         <div class="card-header">Продукти в поръчката</div>
         <div class="card-body" id="order-items-summary">
             <p class="text-muted mb-0">Все още няма добавени продукти.</p>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm border-0" id="order-overview-card">
+        <div class="card-header">Обобщение</div>
+        <div class="card-body">
+            <div class="row g-3 text-center">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Видове продукти</div>
+                        <div class="fs-4 fw-bold" id="summary-unique-products">0</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Общо количество</div>
+                        <div class="fs-4 fw-bold" id="summary-total-quantity">0</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-3 h-100">
+                        <div class="text-muted small">Готовност</div>
+                        <div class="fs-6 fw-semibold" id="summary-status">Добавете продукти</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -175,6 +202,9 @@
             const finalConfirmationBox = document.getElementById('final-confirmation-box');
             const changeOrderBtn = document.getElementById('change-order');
             const confirmSendBtn = document.getElementById('confirm-send');
+            const uniqueProductsSummary = document.getElementById('summary-unique-products');
+            const totalQuantitySummary = document.getElementById('summary-total-quantity');
+            const statusSummary = document.getElementById('summary-status');
 
             const selectedProducts = new Map();
 
@@ -216,8 +246,15 @@
             const renderSummary = () => {
                 if (selectedProducts.size === 0) {
                     summaryContainer.innerHTML = '<p class="text-muted mb-0">Все още няма добавени продукти.</p>';
+                    uniqueProductsSummary.textContent = '0';
+                    totalQuantitySummary.textContent = '0';
+                    statusSummary.textContent = 'Добавете продукти';
+                    statusSummary.className = 'fs-6 fw-semibold text-muted';
                     return;
                 }
+
+                const totalQuantity = Array.from(selectedProducts.values())
+                    .reduce((accumulator, quantity) => accumulator + quantity, 0);
 
                 const rows = Array.from(selectedProducts.entries()).map(([productId, quantity]) => {
                     const product = products.find(p => p.id === Number(productId));
@@ -226,15 +263,20 @@
                     }
 
                     return `<tr>
-                        <td>${product.type}</td>
+                        <td><span class="badge text-bg-primary">${product.type}</span></td>
                         <td>${product.flavor || '-'}</td>
-                        <td>${product.package}</td>
-                        <td>${quantity}</td>
+                        <td><span class="badge text-bg-light border">${product.package}</span></td>
+                        <td><span class="badge text-bg-success">${quantity}</span></td>
                         <td><button type="button" class="btn btn-sm btn-outline-danger remove-selected" data-product-id="${product.id}">Премахни</button></td>
                     </tr>`;
                 }).join('');
 
                 summaryContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Тип</th><th>Вкус</th><th>Разфасовка</th><th>Количество</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+
+                uniqueProductsSummary.textContent = selectedProducts.size.toString();
+                totalQuantitySummary.textContent = totalQuantity.toString();
+                statusSummary.textContent = 'Готова за преглед';
+                statusSummary.className = 'fs-6 fw-semibold text-success';
 
                 summaryContainer.querySelectorAll('.remove-selected').forEach(button => {
                     button.addEventListener('click', () => {

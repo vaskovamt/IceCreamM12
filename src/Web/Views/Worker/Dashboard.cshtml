@@ -103,24 +103,20 @@
     </tbody>
 </table>
 
-<h4>Суровини (Ingredients)</h4>
+<h4>Склад (Inventory)</h4>
 <table class="table table-sm table-hover">
     <thead>
         <tr>
-            <th>Име</th>
-            <th>Мярка</th>
+            <th>Продукт</th>
             <th>Наличност</th>
-            <th>Минимум</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var ingredient in Model.Data.Ingredients)
+        @foreach (var inventoryItem in Model.Data.InventoryItems)
         {
             <tr>
-                <td>@ingredient.Name</td>
-                <td>@ingredient.Unit</td>
-                <td>@ingredient.QuantityOnHand</td>
-                <td>@ingredient.ReorderLevel</td>
+                <td>@inventoryItem.Product?.Name</td>
+                <td>@inventoryItem.QuantityOnHand</td>
             </tr>
         }
     </tbody>

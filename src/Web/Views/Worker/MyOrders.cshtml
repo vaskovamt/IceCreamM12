@@ -1,0 +1,59 @@
+@model IceCreamM12.Web.Models.ViewModels.MyOrdersViewModel
+@{
+    ViewData["Title"] = "Моите поръчки";
+}
+
+<h1>Моите поръчки</h1>
+<p class="text-muted">История на поръчките, създадени от вас.</p>
+
+<div class="mb-3">
+    <a asp-action="NewOrder" class="btn btn-primary">Нова поръчка</a>
+</div>
+
+@if (!Model.Orders.Any())
+{
+    <p>Няма поръчки.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Общо</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Orders.OrderByDescending(order => order.OrderedAt))
+                {
+                    <tr>
+                        <td>@order.OrderNumber</td>
+                        <td>@order.OrderedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@order.Status</td>
+                        <td>@order.TotalAmount.ToString("C")</td>
+                        <td>
+                            @if (string.Equals(order.Status, "Approved", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <a asp-action="EditOrder" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary">Редактирай</a>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <ul class="mb-0">
+                                @foreach (var item in order.Items)
+                                {
+                                    <li>@item.Product?.Name - @item.Quantity бр. x @item.UnitPrice.ToString("C")</li>
+                                }
+                            </ul>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

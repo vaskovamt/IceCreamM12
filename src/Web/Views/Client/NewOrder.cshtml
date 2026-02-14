@@ -99,25 +99,19 @@
         <div class="card-header">Обобщение</div>
         <div class="card-body">
             <div class="row g-3 text-center">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="p-3 bg-light rounded-3 h-100">
                         <div class="text-muted small">Видове продукти</div>
                         <div class="fs-4 fw-bold" id="summary-unique-products">0</div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="p-3 bg-light rounded-3 h-100">
                         <div class="text-muted small">Общо количество</div>
                         <div class="fs-4 fw-bold" id="summary-total-quantity">0</div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="p-3 bg-light rounded-3 h-100">
-                        <div class="text-muted small">Прогнозна стойност</div>
-                        <div class="fs-5 fw-bold" id="summary-total-amount">0,00 лв.</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="p-3 bg-light rounded-3 h-100">
                         <div class="text-muted small">Готовност</div>
                         <div class="fs-6 fw-semibold" id="summary-status">Добавете продукти</div>
@@ -246,14 +240,8 @@
             const filteredByTypeAndFlavor = () => filteredByType()
                 .filter(product => product.flavor === flavorSelect.value);
 
-            const currentProduct = () => {
-                const selectedProductId = packageSelect.value;
-                if (!selectedProductId) {
-                    return null;
-                }
-
-                return products.find(product => String(product.id) === selectedProductId) ?? null;
-            };
+            const currentProduct = () => products
+                .find(product => product.id === Number(packageSelect.value));
 
             const renderStockHint = () => {
                 const product = currentProduct();
@@ -279,13 +267,11 @@
                     summaryContainer.innerHTML = '<p class="text-muted mb-0">Все още няма добавени продукти.</p>';
                     uniqueProductsSummary.textContent = '0';
                     totalQuantitySummary.textContent = '0';
-                    totalAmountSummary.textContent = formatCurrency(0);
                     statusSummary.textContent = 'Добавете продукти';
                     statusSummary.className = 'fs-6 fw-semibold text-muted';
                     return;
                 }
 
-                let totalAmount = 0;
                 const totalQuantity = Array.from(selectedProducts.values())
                     .reduce((accumulator, quantity) => accumulator + quantity, 0);
 
@@ -300,11 +286,9 @@
 
                     return `<tr>
                         <td><span class="badge text-bg-primary">${product.type}</span></td>
-                        <td>${product.flavor}</td>
+                        <td>${product.flavor || '-'}</td>
                         <td><span class="badge text-bg-light border">${product.package}</span></td>
-                        <td>${formatCurrency(product.price)}</td>
                         <td><span class="badge text-bg-success">${quantity}</span></td>
-                        <td>${formatCurrency(lineTotal)}</td>
                         <td><button type="button" class="btn btn-sm btn-outline-danger remove-selected" data-product-id="${product.id}">Премахни</button></td>
                     </tr>`;
                 }).join('');
@@ -314,6 +298,11 @@
                 uniqueProductsSummary.textContent = selectedProducts.size.toString();
                 totalQuantitySummary.textContent = totalQuantity.toString();
                 totalAmountSummary.textContent = formatCurrency(totalAmount);
+                statusSummary.textContent = 'Готова за преглед';
+                statusSummary.className = 'fs-6 fw-semibold text-success';
+
+                uniqueProductsSummary.textContent = selectedProducts.size.toString();
+                totalQuantitySummary.textContent = totalQuantity.toString();
                 statusSummary.textContent = 'Готова за преглед';
                 statusSummary.className = 'fs-6 fw-semibold text-success';
 
@@ -330,11 +319,14 @@
                 const flavors = unique(filteredByType().map(product => product.flavor));
                 setOptions(flavorSelect, flavors);
 
-                const packageProducts = filteredByTypeAndFlavor();
-                setOptions(packageSelect, packageProducts.map(product => ({
-                    value: String(product.id),
-                    label: `${product.package} (${formatCurrency(product.price)})`
-                })));
+                const packages = unique(filteredByTypeAndFlavor().map(product => product.package));
+                setOptions(packageSelect, packages.map(packageName => {
+                    const product = filteredByTypeAndFlavor().find(current => current.package === packageName);
+                    return {
+                        value: packageName,
+                        label: `${packageName} (${formatCurrency(product?.price ?? 0)})`
+                    };
+                }));
 
                 addProductBtn.disabled = packageProducts.length === 0;
                 renderStockHint();
@@ -348,12 +340,14 @@
 
             typeSelect.addEventListener('change', refreshFlavorAndPackage);
             flavorSelect.addEventListener('change', () => {
-                const packageProducts = filteredByTypeAndFlavor();
-                setOptions(packageSelect, packageProducts.map(product => ({
-                    value: String(product.id),
-                    label: `${product.package} (${formatCurrency(product.price)})`
-                })));
-                addProductBtn.disabled = packageProducts.length === 0;
+                const packages = unique(filteredByTypeAndFlavor().map(product => product.package));
+                setOptions(packageSelect, packages.map(packageName => {
+                    const product = filteredByTypeAndFlavor().find(current => current.package === packageName);
+                    return {
+                        value: packageName,
+                        label: `${packageName} (${formatCurrency(product?.price ?? 0)})`
+                    };
+                }));
                 renderStockHint();
             });
             packageSelect.addEventListener('change', renderStockHint);
@@ -372,13 +366,9 @@
                     return;
                 }
 
-                const existingQuantity = selectedProducts.get(product.id) ?? 0;
-                const nextQuantity = existingQuantity + quantity;
-
                 const hasTrackableStock = Number.isFinite(product.stock) && product.stock > 0;
-                if (hasTrackableStock && nextQuantity > product.stock) {
-                    const remaining = Math.max(product.stock - existingQuantity, 0);
-                    alert(`Налични са само ${product.stock} бр. (можете да добавите още ${remaining} бр.)`);
+                if (hasTrackableStock && quantity > product.stock) {
+                    alert(`Налични са само ${product.stock} бр.`);
                     return;
                 }
 

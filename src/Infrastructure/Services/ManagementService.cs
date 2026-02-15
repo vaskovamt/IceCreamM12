@@ -43,7 +43,7 @@ public class ManagementService : IManagementService
             TodayOperationsCount = await _dbContext.InventoryAudits.CountAsync(a => a.PerformedAt >= today, cancellationToken),
             Orders = orders,
             Operations = operations,
-            Ingredients = await GetIngredientsAsync(cancellationToken)
+            InventoryItems = await GetInventoryItemsAsync(cancellationToken)
         };
     }
 

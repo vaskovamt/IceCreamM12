@@ -55,7 +55,7 @@
 }
 
 <h1>Нова поръчка</h1>
-<p class="text-muted mb-4">Изберете продукти и прегледайте поръчката си в удобен визуален формат, преди да я изпратите.</p>
+<p class="text-muted mb-4">Изберете продукти и прегледайте поръчката в удобен визуален формат, преди да я изпратите. Поръчката ще бъде одобрена автоматично.</p>
 <form asp-action="NewOrder" method="post" id="new-order-form">
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>

@@ -66,6 +66,7 @@ else
                                         <th class="text-end">Ед. цена</th>
                                         <th class="text-end">Количество</th>
                                         <th class="text-end">Общо</th>
+                                        <th class="text-end">Количество</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -76,6 +77,7 @@ else
                                             <td class="text-end">@item.UnitPrice.ToString("C")</td>
                                             <td class="text-end"><span class="badge text-bg-primary">@item.Quantity</span></td>
                                             <td class="text-end fw-semibold">@((item.UnitPrice * item.Quantity).ToString("C"))</td>
+                                            <td class="text-end"><span class="badge text-bg-primary">@item.Quantity</span></td>
                                         </tr>
                                     }
                                 </tbody>

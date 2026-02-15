@@ -1,0 +1,94 @@
+@model IceCreamM12.Web.Models.ViewModels.NewOrderViewModel
+@{
+    ViewData["Title"] = "Редакция на поръчка";
+    var orderId = ViewData["OrderId"];
+}
+
+<h1>Редакция на поръчка @ViewData["OrderNumber"]</h1>
+<p class="text-muted">Може да редактирате само ваши вече одобрени поръчки.</p>
+
+<form asp-action="EditOrder" asp-route-orderId="@orderId" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="table-responsive mb-4">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Продукт</th>
+                    <th>Наличност</th>
+                    <th>Цена</th>
+                    <th>Количество</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var index = 0; index < Model.Items.Count; index++)
+                {
+                    var item = Model.Items[index];
+                    var product = Model.AvailableProducts.FirstOrDefault(p => p.Id == item.ProductId);
+                    <tr>
+                        <td>
+                            @product?.Name
+                            <input asp-for="Items[index].ProductId" type="hidden" />
+                        </td>
+                        <td>@(product?.InventoryItem?.QuantityOnHand ?? 0)</td>
+                        <td>@(product?.Price.ToString("C") ?? "-")</td>
+                        <td>
+                            <input asp-for="Items[index].Quantity" class="form-control" min="0" />
+                            <span asp-validation-for="Items[index].Quantity" class="text-danger"></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="CustomerName" class="form-label"></label>
+            <input asp-for="CustomerName" class="form-control" />
+            <span asp-validation-for="CustomerName" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CustomerEmail" class="form-label"></label>
+            <input asp-for="CustomerEmail" class="form-control" />
+            <span asp-validation-for="CustomerEmail" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CompanyEik" class="form-label"></label>
+            <input asp-for="CompanyEik" class="form-control" />
+            <span asp-validation-for="CompanyEik" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="InvoiceAddress" class="form-label"></label>
+            <input asp-for="InvoiceAddress" class="form-control" />
+            <span asp-validation-for="InvoiceAddress" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="PaymentMethod" class="form-label"></label>
+            <select asp-for="PaymentMethod" class="form-select">
+                <option value="">-- Изберете --</option>
+                <option value="По банков път">По банков път</option>
+                <option value="В брой">В брой</option>
+                <option value="С карта">С карта</option>
+            </select>
+            <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="VatNumber" class="form-label"></label>
+            <input asp-for="VatNumber" class="form-control" />
+            <span asp-validation-for="VatNumber" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ContactPhone" class="form-label"></label>
+            <input asp-for="ContactPhone" class="form-control" />
+            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-4">Запази промените</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

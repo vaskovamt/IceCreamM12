@@ -58,8 +58,6 @@ public class RegisterModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
-        returnUrl ??= Url.Content("~/");
-
         if (!ModelState.IsValid)
         {
             return Page();
@@ -96,7 +94,11 @@ public class RegisterModel : PageModel
             }
 
             await _signInManager.SignInAsync(user, isPersistent: false);
-            return LocalRedirect(returnUrl);
+
+            // New registrations are always created as Client users.
+            // Redirecting to an arbitrary returnUrl can send them to role-restricted pages
+            // (for example Owner/Worker), which results in an Access Denied loop.
+            return RedirectToAction("Client", "Dashboard");
         }
 
         foreach (var error in result.Errors)

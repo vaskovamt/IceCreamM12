@@ -54,12 +54,16 @@
             <input asp-for="CustomerEmail" class="form-control" />
             <span asp-validation-for="CustomerEmail" class="text-danger"></span>
         </div>
-        <div class="col-md-6">
+        <div class="col-12 form-check">
+            <input asp-for="IsBusinessOrder" class="form-check-input" id="is-business-order" />
+            <label asp-for="IsBusinessOrder" class="form-check-label" for="is-business-order">За бизнес</label>
+        </div>
+        <div class="col-md-6" id="business-eik-group">
             <label asp-for="CompanyEik" class="form-label"></label>
             <input asp-for="CompanyEik" class="form-control" />
             <span asp-validation-for="CompanyEik" class="text-danger"></span>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" id="business-invoice-group">
             <label asp-for="InvoiceAddress" class="form-label"></label>
             <input asp-for="InvoiceAddress" class="form-control" />
             <span asp-validation-for="InvoiceAddress" class="text-danger"></span>
@@ -91,4 +95,20 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const businessOrderCheckbox = document.getElementById('is-business-order');
+            const businessEikGroup = document.getElementById('business-eik-group');
+            const businessInvoiceGroup = document.getElementById('business-invoice-group');
+
+            const toggleBusinessFields = () => {
+                const isBusinessOrder = businessOrderCheckbox?.checked ?? false;
+                businessEikGroup?.classList.toggle('d-none', !isBusinessOrder);
+                businessInvoiceGroup?.classList.toggle('d-none', !isBusinessOrder);
+            };
+
+            businessOrderCheckbox?.addEventListener('change', toggleBusinessFields);
+            toggleBusinessFields();
+        })();
+    </script>
 }

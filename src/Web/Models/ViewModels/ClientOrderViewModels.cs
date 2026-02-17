@@ -7,6 +7,9 @@ public class NewOrderViewModel
 {
     public List<NewOrderItemViewModel> Items { get; set; } = [new()];
 
+    [Display(Name = "Тип поръчка")]
+    public bool IsBusinessOrder { get; set; }
+
     [StringLength(200)]
     [Display(Name = "Име")]
     public string? CustomerName { get; set; }
@@ -15,15 +18,13 @@ public class NewOrderViewModel
     [Display(Name = "Имейл")]
     public string? CustomerEmail { get; set; }
 
-    [Required(ErrorMessage = "ЕИК е задължителен за издаване на фактура.")]
     [RegularExpression(@"^(\d{9}|\d{13})$", ErrorMessage = "ЕИК трябва да е 9 или 13 цифри.")]
     [Display(Name = "ЕИК")]
-    public string CompanyEik { get; set; } = string.Empty;
+    public string? CompanyEik { get; set; }
 
-    [Required(ErrorMessage = "Адрес за фактура е задължителен.")]
     [StringLength(150)]
     [Display(Name = "Адрес за фактура")]
-    public string InvoiceAddress { get; set; } = string.Empty;
+    public string? InvoiceAddress { get; set; }
 
     [Required(ErrorMessage = "Изберете начин на плащане.")]
     [StringLength(50)]

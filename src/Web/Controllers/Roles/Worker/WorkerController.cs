@@ -86,8 +86,8 @@ public class WorkerController : Controller
                 orderItems,
                 customerName,
                 customerEmail,
-                model.CompanyEik.Trim(),
-                model.InvoiceAddress.Trim(),
+                model.CompanyEik?.Trim() ?? string.Empty,
+                model.InvoiceAddress?.Trim() ?? string.Empty,
                 model.PaymentMethod,
                 model.VatNumber,
                 model.ContactPhone,
@@ -126,6 +126,7 @@ public class WorkerController : Controller
             CustomerEmail = order.CustomerEmail,
             CompanyEik = order.CompanyEik,
             InvoiceAddress = order.InvoiceAddress,
+            IsBusinessOrder = !string.IsNullOrWhiteSpace(order.CompanyEik) || !string.IsNullOrWhiteSpace(order.InvoiceAddress),
             PaymentMethod = order.PaymentMethod,
             VatNumber = order.VatNumber,
             ContactPhone = order.ContactPhone,
@@ -183,8 +184,8 @@ public class WorkerController : Controller
                 orderItems,
                 string.IsNullOrWhiteSpace(model.CustomerName) ? User.Identity?.Name?.Trim() ?? string.Empty : model.CustomerName.Trim(),
                 User.Identity?.Name?.Trim() ?? string.Empty,
-                model.CompanyEik.Trim(),
-                model.InvoiceAddress.Trim(),
+                model.CompanyEik?.Trim() ?? string.Empty,
+                model.InvoiceAddress?.Trim() ?? string.Empty,
                 model.PaymentMethod,
                 model.VatNumber,
                 model.ContactPhone,
@@ -346,6 +347,19 @@ public class WorkerController : Controller
         if (!allowedPaymentMethods.Contains(model.PaymentMethod))
         {
             ModelState.AddModelError(nameof(model.PaymentMethod), "Изберете валиден начин на плащане.");
+        }
+
+        if (model.IsBusinessOrder)
+        {
+            if (string.IsNullOrWhiteSpace(model.CompanyEik))
+            {
+                ModelState.AddModelError(nameof(model.CompanyEik), "ЕИК е задължителен за поръчка за бизнес.");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.InvoiceAddress))
+            {
+                ModelState.AddModelError(nameof(model.InvoiceAddress), "Адрес за фактура е задължителен за поръчка за бизнес.");
+            }
         }
     }
 

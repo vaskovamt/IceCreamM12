@@ -23,6 +23,7 @@ public class OrdersManagementViewModel
 public class InventoryManagementViewModel
 {
     public List<InventoryItem> InventoryItems { get; set; } = [];
+    public List<Ingredient> Ingredients { get; set; } = [];
     public List<InventoryAudit> RecentAudits { get; set; } = [];
 
     public InventoryOperationInputModel Load { get; set; } = new();

@@ -174,6 +174,11 @@ public class ManagementService : IManagementService
         foreach (var item in systemItems)
         {
             var counted = countedQuantities.GetValueOrDefault(item.ProductId, item.QuantityOnHand);
+            if (counted < 0)
+            {
+                throw new InvalidOperationException($"Counted quantity cannot be negative for product {item.ProductId}.");
+            }
+
             var result = new DailyCheckResult
             {
                 ProductId = item.ProductId,
@@ -185,10 +190,14 @@ public class ManagementService : IManagementService
 
             if (result.HasMismatch)
             {
+                var delta = result.CountedQuantity - result.SystemQuantity;
+                item.QuantityOnHand = result.CountedQuantity;
+                item.LastUpdatedAt = DateTime.UtcNow;
+
                 await _auditService.RecordInventoryChangeAsync(
                     item,
-                    0,
-                    $"Daily check mismatch: system={result.SystemQuantity}, counted={result.CountedQuantity}",
+                    delta,
+                    $"Daily check reconciliation: system={result.SystemQuantity}, counted={result.CountedQuantity}",
                     performedByUserId,
                     cancellationToken);
             }

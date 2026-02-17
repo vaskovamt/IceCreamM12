@@ -18,13 +18,34 @@
 
     IReadOnlyDictionary<string, string> sizeDescriptions = new Dictionary<string, string>
     {
-        ["0.100kg"] = "Идеална единична порция за бързо похапване.",
-        ["0.300kg"] = "Подходяща за споделяне или по-голяма порция.",
-        ["0.500kg"] = "Семеен размер за няколко порции у дома.",
-        ["2.000kg"] = "Професионален размер за събития и заведения.",
-        ["2.500kg"] = "Голям размер за натоварени обекти.",
-        ["8.000kg"] = "Най-голямият размер за масово обслужване."
+        ["0.100kg"] = "Перфектна единична порция.",
+        ["0.300kg"] = "Удобна порция за споделяне.",
+        ["0.500kg"] = "Семеен размер за вкъщи.",
+        ["2.000kg"] = "Подходящ за събития и заведения.",
+        ["2.500kg"] = "Голям обем за натоварени обекти.",
+        ["8.000kg"] = "Максимален размер за масово обслужване."
     };
+
+    IReadOnlyDictionary<string, string> coneDescriptions = new Dictionary<string, string>
+    {
+        ["Вафлено рогче"] = "Хрупкаво вафлено рогче с класически вкус.",
+        ["Вафлена Чашка"] = "Стабилна вафлена чашка за щедра порция.",
+        ["Захарно рогче"] = "Сладко и хрупкаво захарно рогче."
+    };
+
+    static string GetOptimizedMenuDescription(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        const int maxLength = 90;
+        string normalized = string.Join(' ', value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        return normalized.Length <= maxLength
+            ? normalized
+            : string.Concat(normalized.AsSpan(0, maxLength - 1), "…");
+    }
 
     static string? ExtractIceCreamSize(string productName)
     {
@@ -79,12 +100,19 @@
             <div class="card shadow-sm h-100">
                 @if (!string.IsNullOrWhiteSpace(productImage))
                 {
-                    <img src="@productImage" class="card-img-top" alt="@product.Name" style="height: 220px; object-fit: cover;" />
+                    <img src="@productImage"
+                         class="card-img-top"
+                         alt="@product.Name"
+                         width="640"
+                         height="220"
+                         loading="lazy"
+                         decoding="async"
+                         style="height: 220px; object-fit: cover;" />
                 }
 
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@productSize</h5>
-                    <p class="card-text mb-2">@(sizeDescription ?? "Описание за този размер не е налично.")</p>
+                    <p class="card-text mb-2">@GetOptimizedMenuDescription(sizeDescription, "Описание за този размер не е налично.")</p>
                     <p class="card-text mt-auto">
                         Цена от: <strong>@product.Price.ToString("C")</strong>
                     </p>
@@ -101,17 +129,25 @@
     {
         string? coneType = ExtractConeType(product.Name);
         productImages.TryGetValue(coneType ?? string.Empty, out string? coneImage);
+        coneDescriptions.TryGetValue(coneType ?? string.Empty, out string? coneDescription);
 
         <div class="col-md-6 col-lg-4">
             <div class="card shadow-sm h-100">
                 @if (!string.IsNullOrWhiteSpace(coneImage))
                 {
-                    <img src="@coneImage" class="card-img-top" alt="@product.Name" style="height: 220px; object-fit: cover;" />
+                    <img src="@coneImage"
+                         class="card-img-top"
+                         alt="@product.Name"
+                         width="640"
+                         height="220"
+                         loading="lazy"
+                         decoding="async"
+                         style="height: 220px; object-fit: cover;" />
                 }
 
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@coneType</h5>
-                    <p class="card-text mb-2">@(product.Description ?? "Класическа фунийка за сервиране на сладолед.")</p>
+                    <p class="card-text mb-2">@GetOptimizedMenuDescription(product.Description ?? coneDescription, "Класическа фунийка за сервиране на сладолед.")</p>
                     <p class="card-text mt-auto">
                         Цена: <strong>@product.Price.ToString("C")</strong>
                     </p>

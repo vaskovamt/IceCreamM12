@@ -219,7 +219,8 @@ public class ManagementService : IManagementService
                 DisplayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName ?? user.Email ?? user.Id : user.DisplayName,
                 Email = user.Email ?? string.Empty,
                 Roles = roles.Order().ToList(),
-                CanPromoteToWorker = !roles.Contains("Worker") && !roles.Contains("Owner")
+                CanPromoteToWorker = !roles.Contains("Worker") && !roles.Contains("Owner"),
+                CanDemoteToClient = roles.Contains("Worker") && !roles.Contains("Owner")
             });
         }
 
@@ -251,6 +252,45 @@ public class ManagementService : IManagementService
         if (!result.Succeeded)
         {
             throw new InvalidOperationException(string.Join("; ", result.Errors.Select(error => error.Description)));
+        }
+    }
+
+    public async Task DemoteToClientAsync(string userId, CancellationToken cancellationToken)
+    {
+        var userManager = _userManager ?? throw new InvalidOperationException("User management is not configured.");
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            throw new InvalidOperationException("Потребителят не е намерен.");
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        if (roles.Contains("Owner"))
+        {
+            throw new InvalidOperationException("Собственик не може да бъде променен на клиент.");
+        }
+
+        if (!roles.Contains("Worker"))
+        {
+            return;
+        }
+
+        var removeResult = await userManager.RemoveFromRoleAsync(user, "Worker");
+        if (!removeResult.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join("; ", removeResult.Errors.Select(error => error.Description)));
+        }
+
+        if (roles.Contains("Client"))
+        {
+            return;
+        }
+
+        var addResult = await userManager.AddToRoleAsync(user, "Client");
+        if (!addResult.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join("; ", addResult.Errors.Select(error => error.Description)));
         }
     }
 

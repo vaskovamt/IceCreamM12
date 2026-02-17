@@ -21,7 +21,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-var dbPath = Path.Combine(builder.Environment.ContentRootPath, "app.db");
+var dbPath = ResolveDatabasePath(builder.Environment.ContentRootPath);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
@@ -123,4 +123,38 @@ static string ResolveContentRootPath()
     }
 
     return Directory.GetCurrentDirectory();
+}
+
+static string ResolveDatabasePath(string contentRootPath)
+{
+    if (CanWriteToDirectory(contentRootPath))
+    {
+        return Path.Combine(contentRootPath, "app.db");
+    }
+
+    var appDataPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "IceCreamM12");
+
+    Directory.CreateDirectory(appDataPath);
+
+    return Path.Combine(appDataPath, "app.db");
+}
+
+static bool CanWriteToDirectory(string directoryPath)
+{
+    try
+    {
+        Directory.CreateDirectory(directoryPath);
+
+        var testFilePath = Path.Combine(directoryPath, $".write-test-{Guid.NewGuid():N}.tmp");
+        File.WriteAllText(testFilePath, "test");
+        File.Delete(testFilePath);
+
+        return true;
+    }
+    catch
+    {
+        return false;
+    }
 }

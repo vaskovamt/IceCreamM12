@@ -32,6 +32,7 @@ public interface IManagementService
     Task<List<InventoryAudit>> GetRecentAuditsAsync(int take, CancellationToken cancellationToken);
     Task<List<UserManagementItem>> GetUsersWithRolesAsync(CancellationToken cancellationToken);
     Task PromoteToWorkerAsync(string userId, CancellationToken cancellationToken);
+    Task DemoteToClientAsync(string userId, CancellationToken cancellationToken);
 
     Task<(List<DailyCheckResult> ProductResults, List<IngredientDailyCheckResult> IngredientResults)> ExecuteDailyCheckAsync(
         Dictionary<int, int> countedQuantities,

@@ -128,6 +128,16 @@ public class OwnerController : Controller
         return RedirectToAction(nameof(Users));
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DemoteToClient(string userId, CancellationToken cancellationToken)
+    {
+        await ExecuteWithTempDataAsync(async () =>
+            await _managementService.DemoteToClientAsync(userId, cancellationToken));
+
+        return RedirectToAction(nameof(Users));
+    }
+
     [HttpGet]
     public async Task<IActionResult> Products(CancellationToken cancellationToken)
         => View("Products/Index", await _managementService.GetProductsAsync(cancellationToken));

@@ -1,3 +1,77 @@
 @model IceCreamM12.Web.Models.ViewModels.OrdersManagementViewModel
+
+@{
+    ViewData["Title"] = "Поръчки";
+}
+
 <h1>Чакащи поръчки</h1>
-<table class="table"><thead><tr><th>#</th><th>Клиент</th><th>Общо</th><th></th></tr></thead><tbody>@foreach(var o in Model.Orders){<tr><td>@o.OrderNumber</td><td>@o.CustomerName</td><td>@o.TotalAmount.ToString("C")</td><td><form asp-action="ApproveOrder" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="orderId" value="@o.Id"/><button class="btn btn-success btn-sm">Одобри</button></form><form asp-action="RejectOrder" method="post" class="d-inline">@Html.AntiForgeryToken()<input type="hidden" name="orderId" value="@o.Id"/><input name="rejectionReason" class="form-control form-control-sm d-inline w-auto" placeholder="Причина"/><button class="btn btn-danger btn-sm">Откажи</button></form></td></tr>}</tbody></table>
+<p class="text-muted">Следете входящите поръчки и преглеждайте съдържанието на всяка поръчка.</p>
+
+@if (!Model.Orders.Any())
+{
+    <div class="alert alert-info">В момента няма чакащи поръчки.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var order in Model.Orders)
+        {
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">Поръчка #@order.OrderNumber</h5>
+                                <div class="text-muted small">@order.OrderedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                <div class="small"><strong>Клиент:</strong> @order.CustomerName</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge text-bg-secondary mb-2">@order.Status</span>
+                                <div class="fw-semibold">@order.TotalAmount.ToString("C")</div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Продукт</th>
+                                        <th class="text-end">Ед. цена</th>
+                                        <th class="text-end">Количество</th>
+                                        <th class="text-end">Общо</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <tr>
+                                            <td>@(item.Product?.Name ?? $"Продукт #{item.ProductId}")</td>
+                                            <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                            <td class="text-end"><span class="badge text-bg-primary">@item.Quantity</span></td>
+                                            <td class="text-end fw-semibold">@((item.UnitPrice * item.Quantity).ToString("C"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <form asp-action="ApproveOrder" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <button class="btn btn-sm btn-success">Одобри</button>
+                            </form>
+
+                            <form asp-action="RejectOrder" method="post" class="d-flex gap-2 align-items-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <input name="rejectionReason" class="form-control form-control-sm" placeholder="Причина" />
+                                <button class="btn btn-sm btn-danger">Откажи</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

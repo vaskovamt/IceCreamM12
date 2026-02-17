@@ -70,9 +70,7 @@ public class WorkerController : Controller
 
         try
         {
-            var customerEmail = string.IsNullOrWhiteSpace(model.CustomerEmail)
-                ? User.Identity?.Name ?? string.Empty
-                : model.CustomerEmail.Trim();
+            var customerEmail = User.Identity?.Name?.Trim() ?? string.Empty;
 
             var customerName = string.IsNullOrWhiteSpace(model.CustomerName)
                 ? customerEmail
@@ -183,8 +181,8 @@ public class WorkerController : Controller
             await _orderService.UpdateOrderAsync(
                 orderId,
                 orderItems,
-                string.IsNullOrWhiteSpace(model.CustomerName) ? model.CustomerEmail?.Trim() ?? string.Empty : model.CustomerName.Trim(),
-                string.IsNullOrWhiteSpace(model.CustomerEmail) ? User.Identity?.Name ?? string.Empty : model.CustomerEmail.Trim(),
+                string.IsNullOrWhiteSpace(model.CustomerName) ? User.Identity?.Name?.Trim() ?? string.Empty : model.CustomerName.Trim(),
+                User.Identity?.Name?.Trim() ?? string.Empty,
                 model.CompanyEik.Trim(),
                 model.InvoiceAddress.Trim(),
                 model.PaymentMethod,

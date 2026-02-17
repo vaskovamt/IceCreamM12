@@ -41,12 +41,12 @@ builder.Services
 
 builder.Services.AddScoped<IFlavorRepository, FlavorRepository>();
 builder.Services.AddScoped<IFlavorService, FlavorService>();
-builder.Services.AddScoped<IAuditService, AuditService>();
-builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IAuditService, IceCreamM12.Infrastructure.Services.AuditService>();
+builder.Services.AddScoped<IInventoryService, IceCreamM12.Infrastructure.Services.InventoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderService, IceCreamM12.Infrastructure.Services.OrderService>();
 builder.Services.AddScoped<IManagementService, ManagementService>();
-builder.Services.AddScoped<IProductionService, ProductionService>();
+builder.Services.AddScoped<IProductionService, IceCreamM12.Infrastructure.Services.ProductionService>();
 
 var app = builder.Build();
 

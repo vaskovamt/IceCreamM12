@@ -295,6 +295,7 @@ public class OwnerController : Controller
         => new()
         {
             InventoryItems = await _managementService.GetInventoryItemsAsync(cancellationToken),
+            Ingredients = await _managementService.GetIngredientsAsync(cancellationToken),
             RecentAudits = await _managementService.GetRecentAuditsAsync(15, cancellationToken)
         };
 

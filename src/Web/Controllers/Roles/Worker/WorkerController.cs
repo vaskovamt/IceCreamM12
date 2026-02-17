@@ -227,6 +227,7 @@ public class WorkerController : Controller
         => View(new InventoryManagementViewModel
         {
             InventoryItems = await _managementService.GetInventoryItemsAsync(cancellationToken),
+            Ingredients = await _managementService.GetIngredientsAsync(cancellationToken),
             RecentAudits = await _managementService.GetRecentAuditsAsync(10, cancellationToken)
         });
 

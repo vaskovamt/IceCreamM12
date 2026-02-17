@@ -1,0 +1,93 @@
+@model IceCreamM12.Web.Models.ViewModels.ProductionBatchViewModel
+@{
+    ViewData["Title"] = "Производство";
+}
+
+<h1>Производство</h1>
+<p class="text-muted">Въведете използваните суровини и произведените количества сладолед за текущата партида.</p>
+
+<form asp-action="Production" method="post">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Използвани суровини</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Суровина</th>
+                                <th>Налични</th>
+                                <th>Използвани</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.IngredientInputs.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Model.IngredientInputs[i].IngredientName (@Model.IngredientInputs[i].Unit)
+                                        <input asp-for="IngredientInputs[i].IngredientId" type="hidden" />
+                                        <input asp-for="IngredientInputs[i].IngredientName" type="hidden" />
+                                        <input asp-for="IngredientInputs[i].Unit" type="hidden" />
+                                        <input asp-for="IngredientInputs[i].AvailableQuantity" type="hidden" />
+                                    </td>
+                                    <td>@Model.IngredientInputs[i].AvailableQuantity</td>
+                                    <td>
+                                        <input asp-for="IngredientInputs[i].UsedQuantity" class="form-control form-control-sm" min="0" />
+                                        <span asp-validation-for="IngredientInputs[i].UsedQuantity" class="text-danger"></span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Произведени продукти (сладолед)</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Продукт</th>
+                                <th>Налични</th>
+                                <th>Произведени</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.ProductInputs.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Model.ProductInputs[i].ProductName
+                                        <input asp-for="ProductInputs[i].ProductId" type="hidden" />
+                                        <input asp-for="ProductInputs[i].ProductName" type="hidden" />
+                                        <input asp-for="ProductInputs[i].AvailableQuantity" type="hidden" />
+                                    </td>
+                                    <td>@Model.ProductInputs[i].AvailableQuantity</td>
+                                    <td>
+                                        <input asp-for="ProductInputs[i].ProducedQuantity" class="form-control form-control-sm" min="0" />
+                                        <span asp-validation-for="ProductInputs[i].ProducedQuantity" class="text-danger"></span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Запиши производство</button>
+</form>
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+}

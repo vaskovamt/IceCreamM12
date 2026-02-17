@@ -261,6 +261,174 @@ public class WorkerController : Controller
         return RedirectToAction(nameof(Inventory));
     }
 
+
+    [HttpGet]
+    public async Task<IActionResult> Production(CancellationToken cancellationToken)
+    {
+        var ingredients = await _managementService.GetIngredientsAsync(cancellationToken);
+        var products = await _managementService.GetInventoryItemsAsync(cancellationToken);
+
+        return View(new ProductionBatchViewModel
+        {
+            IngredientInputs = ingredients.Select(i => new IngredientProductionInputModel
+            {
+                IngredientId = i.Id,
+                IngredientName = i.Name,
+                Unit = i.Unit,
+                AvailableQuantity = i.QuantityOnHand,
+                UsedQuantity = 0
+            }).ToList(),
+            ProductInputs = products.Select(i => new ProductProductionInputModel
+            {
+                ProductId = i.ProductId,
+                ProductName = i.Product?.Name ?? $"Product #{i.ProductId}",
+                AvailableQuantity = i.QuantityOnHand,
+                ProducedQuantity = 0
+            }).ToList()
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Production(ProductionBatchViewModel model, CancellationToken cancellationToken)
+    {
+        var ingredientMap = (await _managementService.GetIngredientsAsync(cancellationToken))
+            .ToDictionary(i => i.Id);
+        var productMap = (await _managementService.GetInventoryItemsAsync(cancellationToken))
+            .ToDictionary(i => i.ProductId);
+
+        var ingredientInputs = model.IngredientInputs
+            .Where(i => i.UsedQuantity > 0)
+            .ToList();
+        var productInputs = model.ProductInputs
+            .Where(p => p.ProducedQuantity > 0)
+            .ToList();
+
+        if (ingredientInputs.Count == 0)
+        {
+            ModelState.AddModelError(string.Empty, "Въведете използвано количество за поне една суровина.");
+        }
+
+        if (productInputs.Count == 0)
+        {
+            ModelState.AddModelError(string.Empty, "Въведете произведено количество за поне един продукт.");
+        }
+
+        foreach (var input in ingredientInputs)
+        {
+            if (!ingredientMap.TryGetValue(input.IngredientId, out var ingredient))
+            {
+                ModelState.AddModelError(string.Empty, $"Невалидна суровина с ID {input.IngredientId}.");
+                continue;
+            }
+
+            if (input.UsedQuantity > ingredient.QuantityOnHand)
+            {
+                ModelState.AddModelError(string.Empty,
+                    $"Недостатъчна наличност за {ingredient.Name}. Налични: {ingredient.QuantityOnHand} {ingredient.Unit}.");
+            }
+        }
+
+        foreach (var input in productInputs)
+        {
+            if (!productMap.ContainsKey(input.ProductId))
+            {
+                ModelState.AddModelError(string.Empty, $"Невалиден продукт с ID {input.ProductId}.");
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            model.IngredientInputs = ingredientMap.Values.Select(i =>
+            {
+                var existing = model.IngredientInputs.FirstOrDefault(x => x.IngredientId == i.Id);
+                return new IngredientProductionInputModel
+                {
+                    IngredientId = i.Id,
+                    IngredientName = i.Name,
+                    Unit = i.Unit,
+                    AvailableQuantity = i.QuantityOnHand,
+                    UsedQuantity = existing?.UsedQuantity ?? 0
+                };
+            }).ToList();
+
+            model.ProductInputs = productMap.Values.Select(p =>
+            {
+                var existing = model.ProductInputs.FirstOrDefault(x => x.ProductId == p.ProductId);
+                return new ProductProductionInputModel
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.Product?.Name ?? $"Product #{p.ProductId}",
+                    AvailableQuantity = p.QuantityOnHand,
+                    ProducedQuantity = existing?.ProducedQuantity ?? 0
+                };
+            }).ToList();
+
+            return View(model);
+        }
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            foreach (var input in ingredientInputs)
+            {
+                var ingredient = ingredientMap[input.IngredientId];
+                ingredient.QuantityOnHand -= input.UsedQuantity;
+                ingredient.LastUpdatedAt = DateTime.UtcNow;
+            }
+
+            foreach (var ingredient in ingredientInputs.Select(i => ingredientMap[i.IngredientId]))
+            {
+                await _managementService.UpdateIngredientAsync(ingredient, cancellationToken);
+            }
+
+            foreach (var input in productInputs)
+            {
+                await _inventoryService.LoadInventoryAsync(
+                    input.ProductId,
+                    input.ProducedQuantity,
+                    "Производство",
+                    userId,
+                    cancellationToken);
+            }
+
+            TempData["Success"] = "Операция „Производство“ е записана успешно.";
+            return RedirectToAction(nameof(Production));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+
+            model.IngredientInputs = ingredientMap.Values.Select(i =>
+            {
+                var existing = model.IngredientInputs.FirstOrDefault(x => x.IngredientId == i.Id);
+                return new IngredientProductionInputModel
+                {
+                    IngredientId = i.Id,
+                    IngredientName = i.Name,
+                    Unit = i.Unit,
+                    AvailableQuantity = i.QuantityOnHand,
+                    UsedQuantity = existing?.UsedQuantity ?? 0
+                };
+            }).ToList();
+
+            model.ProductInputs = productMap.Values.Select(p =>
+            {
+                var existing = model.ProductInputs.FirstOrDefault(x => x.ProductId == p.ProductId);
+                return new ProductProductionInputModel
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.Product?.Name ?? $"Product #{p.ProductId}",
+                    AvailableQuantity = p.QuantityOnHand,
+                    ProducedQuantity = existing?.ProducedQuantity ?? 0
+                };
+            }).ToList();
+
+            return View(model);
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> DailyCheck(CancellationToken cancellationToken)
     {

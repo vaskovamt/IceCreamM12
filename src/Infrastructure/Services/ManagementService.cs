@@ -167,8 +167,25 @@ public class ManagementService : IManagementService
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<List<InventoryItem>> GetInventoryItemsAsync(CancellationToken cancellationToken)
-        => _dbContext.InventoryItems.Include(i => i.Product).OrderBy(i => i.Product!.Name).ToListAsync(cancellationToken);
+    public async Task<List<InventoryItem>> GetInventoryItemsAsync(CancellationToken cancellationToken)
+    {
+        var products = await _dbContext.Products
+            .Include(product => product.InventoryItem)
+            .OrderBy(product => product.Name)
+            .ToListAsync(cancellationToken);
+
+        return products
+            .Select(product => product.InventoryItem ?? new InventoryItem
+            {
+                ProductId = product.Id,
+                Product = product,
+                QuantityOnHand = 0,
+                ReorderLevel = 0,
+                StorageLocation = "Main Freezer",
+                LastUpdatedAt = DateTime.UtcNow
+            })
+            .ToList();
+    }
 
     public Task<List<InventoryAudit>> GetRecentAuditsAsync(int take, CancellationToken cancellationToken)
         => _dbContext.InventoryAudits

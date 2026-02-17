@@ -1,9 +1,116 @@
 @model IceCreamM12.Web.Models.ViewModels.DailyCheckViewModel
+
 <h1>Дневна складова проверка</h1>
-<form method="post">@Html.AntiForgeryToken()<table class="table"><thead><tr><th>Продукт</th><th>Системно</th><th>Преброено</th></tr></thead><tbody>
-@for(int i=0;i<Model.Items.Count;i++){<tr><td>@Model.Items[i].ProductName<input type="hidden" asp-for="Items[i].ProductId"/><input type="hidden" asp-for="Items[i].ProductName"/><input type="hidden" asp-for="Items[i].SystemQuantity"/></td><td>@Model.Items[i].SystemQuantity</td><td><input asp-for="Items[i].CountedQuantity" class="form-control"/></td></tr>}
-</tbody></table><button class="btn btn-primary">Запази проверката</button></form>
-@if (Model.Results.Any())
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <h3>Продукти</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Продукт</th>
+                <th>Системно</th>
+                <th>Преброено</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Items.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Model.Items[i].ProductName
+                        <input type="hidden" asp-for="Items[i].ProductId" />
+                        <input type="hidden" asp-for="Items[i].ProductName" />
+                        <input type="hidden" asp-for="Items[i].SystemQuantity" />
+                    </td>
+                    <td>@Model.Items[i].SystemQuantity</td>
+                    <td><input asp-for="Items[i].CountedQuantity" class="form-control" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Суровини</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Суровина</th>
+                <th>Системно</th>
+                <th>Преброено</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.IngredientItems.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Model.IngredientItems[i].IngredientName (@Model.IngredientItems[i].Unit)
+                        <input type="hidden" asp-for="IngredientItems[i].IngredientId" />
+                        <input type="hidden" asp-for="IngredientItems[i].IngredientName" />
+                        <input type="hidden" asp-for="IngredientItems[i].Unit" />
+                        <input type="hidden" asp-for="IngredientItems[i].SystemQuantity" />
+                    </td>
+                    <td>@Model.IngredientItems[i].SystemQuantity @Model.IngredientItems[i].Unit</td>
+                    <td><input asp-for="IngredientItems[i].CountedQuantity" class="form-control" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary">Запази проверката</button>
+</form>
+
+@if (Model.Results.Any(r => r.HasMismatch))
 {
-<h3 class="mt-4">Разминавания</h3><table class="table table-bordered"><thead><tr><th>Продукт</th><th>Системно</th><th>Преброено</th><th>Разлика</th><th>Преглед от собственик</th></tr></thead><tbody>@foreach(var r in Model.Results.Where(r=>r.HasMismatch)){<tr><td>@r.ProductName</td><td>@r.SystemQuantity</td><td>@r.CountedQuantity</td><td>@r.Difference</td><td>Отбелязано</td></tr>}</tbody></table>
+    <h3 class="mt-4">Разминавания при продукти</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Продукт</th>
+                <th>Системно</th>
+                <th>Преброено</th>
+                <th>Разлика</th>
+                <th>Преглед от собственик</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Results.Where(r => r.HasMismatch))
+            {
+                <tr>
+                    <td>@r.ProductName</td>
+                    <td>@r.SystemQuantity</td>
+                    <td>@r.CountedQuantity</td>
+                    <td>@r.Difference</td>
+                    <td>Отбелязано</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (Model.IngredientResults.Any(r => r.HasMismatch))
+{
+    <h3 class="mt-4">Разминавания при суровини</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Суровина</th>
+                <th>Системно</th>
+                <th>Преброено</th>
+                <th>Разлика</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.IngredientResults.Where(r => r.HasMismatch))
+            {
+                <tr>
+                    <td>@r.IngredientName</td>
+                    <td>@r.SystemQuantity @r.Unit</td>
+                    <td>@r.CountedQuantity @r.Unit</td>
+                    <td>@r.Difference @r.Unit</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }

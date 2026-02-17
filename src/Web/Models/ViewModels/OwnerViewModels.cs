@@ -61,7 +61,9 @@ public class InventoryReplaceInputModel
 public class DailyCheckViewModel
 {
     public List<DailyCheckItemInputModel> Items { get; set; } = [];
+    public List<IngredientDailyCheckItemInputModel> IngredientItems { get; set; } = [];
     public List<DailyCheckResult> Results { get; set; } = [];
+    public List<IngredientDailyCheckResult> IngredientResults { get; set; } = [];
 }
 
 public class DailyCheckItemInputModel
@@ -72,4 +74,15 @@ public class DailyCheckItemInputModel
 
     [Range(0, int.MaxValue)]
     public int CountedQuantity { get; set; }
+}
+
+public class IngredientDailyCheckItemInputModel
+{
+    public int IngredientId { get; set; }
+    public string IngredientName { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public decimal SystemQuantity { get; set; }
+
+    [Range(typeof(decimal), "0", "79228162514264337593543950335")]
+    public decimal CountedQuantity { get; set; }
 }

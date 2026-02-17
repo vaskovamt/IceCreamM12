@@ -1,10 +1,10 @@
 @model IceCreamM12.Web.Models.ViewModels.MyOrdersViewModel
 @{
-    ViewData["Title"] = "Архив на поръчките";
+    ViewData["Title"] = "Поръчки";
 }
 
-<h1>Архив на поръчките</h1>
-<p class="text-muted">Пълен списък на всички създадени поръчки.</p>
+<h1>Поръчки</h1>
+<p class="text-muted">История на всички създадени поръчки.</p>
 
 <div class="mb-3">
     <a asp-action="NewOrder" class="btn btn-primary">Нова поръчка</a>
@@ -16,46 +16,67 @@
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Клиент</th>
-                    <th>Дата</th>
-                    <th>Статус</th>
-                    <th>Общо</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var order in Model.Orders.OrderByDescending(order => order.OrderedAt))
-                {
-                    <tr>
-                        <td>@order.OrderNumber</td>
-                        <td>@order.CustomerName</td>
-                        <td>@order.OrderedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>@order.Status</td>
-                        <td>@order.TotalAmount.ToString("C")</td>
-                        <td>
-                            @if (string.Equals(order.Status, "Approved", StringComparison.OrdinalIgnoreCase))
-                            {
-                                <a asp-action="EditOrder" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary">Редактирай</a>
-                            }
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="6">
-                            <ul class="mb-0">
-                                @foreach (var item in order.Items)
+    <div class="row g-3">
+        @foreach (var order in Model.Orders.OrderByDescending(order => order.OrderedAt))
+        {
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">Поръчка #@order.OrderNumber</h5>
+                                <div class="text-muted small">@order.OrderedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge text-bg-secondary">@order.Status</span>
+                                <div class="fw-semibold mt-2">@order.TotalAmount.ToString("C")</div>
+                                @if (string.Equals(order.Status, "Approved", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    <li>@item.Product?.Name - @item.Quantity бр. x @item.UnitPrice.ToString("C")</li>
+                                    <a asp-action="EditOrder" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary mt-2">Редактирай</a>
                                 }
-                            </ul>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-4"><strong>Клиент:</strong> @order.CustomerName</div>
+                            <div class="col-md-4"><strong>Имейл:</strong> @(string.IsNullOrWhiteSpace(order.CustomerEmail) ? "-" : order.CustomerEmail)</div>
+                            <div class="col-md-4"><strong>Телефон:</strong> @(string.IsNullOrWhiteSpace(order.ContactPhone) ? "-" : order.ContactPhone)</div>
+                            <div class="col-md-4"><strong>ЕИК:</strong> @(string.IsNullOrWhiteSpace(order.CompanyEik) ? "-" : order.CompanyEik)</div>
+                            <div class="col-md-4"><strong>ДДС номер:</strong> @(string.IsNullOrWhiteSpace(order.VatNumber) ? "-" : order.VatNumber)</div>
+                            <div class="col-md-4"><strong>Плащане:</strong> @(string.IsNullOrWhiteSpace(order.PaymentMethod) ? "-" : order.PaymentMethod)</div>
+                            <div class="col-12"><strong>Адрес за фактура:</strong> @(string.IsNullOrWhiteSpace(order.InvoiceAddress) ? "-" : order.InvoiceAddress)</div>
+                            @if (!string.IsNullOrWhiteSpace(order.RejectionReason))
+                            {
+                                <div class="col-12 text-danger"><strong>Причина за отказ:</strong> @order.RejectionReason</div>
+                            }
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Продукт</th>
+                                        <th class="text-end">Ед. цена</th>
+                                        <th class="text-end">Количество</th>
+                                        <th class="text-end">Общо</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.Product?.Name</td>
+                                            <td class="text-end">@item.UnitPrice.ToString("C")</td>
+                                            <td class="text-end">@item.Quantity</td>
+                                            <td class="text-end fw-semibold">@((item.UnitPrice * item.Quantity).ToString("C"))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 }

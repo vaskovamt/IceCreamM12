@@ -77,38 +77,42 @@ public static class DbInitializer
         int iceCreamCategoryId = categoriesByName["IceCream"].Id;
         int conesCategoryId = categoriesByName["Cones"].Id;
 
-        (string Name, string Unit, decimal CostPerUnit, decimal MinQty, decimal MaxQty)[] ingredientCatalog =
+        (string Name, string Unit, decimal CostPerUnit, decimal QuantityOnHand)[] ingredientCatalog =
         [
-            ("Whole Milk", "L", 0.95m, 80m, 180m),
-            ("Heavy Cream", "L", 1.45m, 60m, 140m),
-            ("Granulated Sugar", "kg", 0.85m, 40m, 120m),
-            ("Vanilla Extract", "ml", 0.12m, 1500m, 5000m),
-            ("Stabilizer", "g", 0.05m, 2000m, 6500m),
-            ("Chocolate Chips", "kg", 3.25m, 20m, 90m)
+            ("Whole Milk", "L", 0.95m, 132m),
+            ("Heavy Cream", "L", 1.45m, 104m),
+            ("Granulated Sugar", "kg", 0.85m, 86m),
+            ("Vanilla Extract", "ml", 0.12m, 3200m),
+            ("Stabilizer", "g", 0.05m, 4100m),
+            ("Chocolate Chips", "kg", 3.25m, 57m),
+            ("Cocoa Powder", "kg", 2.10m, 48m),
+            ("Strawberry Puree", "kg", 2.90m, 52m),
+            ("Raspberry Puree", "kg", 3.40m, 46m),
+            ("Blueberry Puree", "kg", 3.75m, 39m),
+            ("Melon Puree", "kg", 2.65m, 44m),
+            ("Caramel Syrup", "L", 2.30m, 61m),
+            ("Hazelnut Paste", "kg", 4.80m, 29m)
         ];
 
-        if (!await context.Ingredients.AnyAsync())
-        {
-            var random = new Random(12);
+        Dictionary<string, Ingredient> existingIngredientsByName = await context.Ingredients
+            .ToDictionaryAsync(ingredient => ingredient.Name, StringComparer.OrdinalIgnoreCase);
 
-            context.Ingredients.AddRange(ingredientCatalog.Select(ingredient =>
+        var missingIngredients = ingredientCatalog
+            .Where(ingredient => !existingIngredientsByName.ContainsKey(ingredient.Name))
+            .Select(ingredient => new Ingredient
             {
-                decimal quantityOnHand = Math.Round(
-                    ingredient.MinQty + ((decimal)random.NextDouble() * (ingredient.MaxQty - ingredient.MinQty)),
-                    2,
-                    MidpointRounding.AwayFromZero);
+                Name = ingredient.Name,
+                Unit = ingredient.Unit,
+                CostPerUnit = ingredient.CostPerUnit,
+                QuantityOnHand = ingredient.QuantityOnHand,
+                ReorderLevel = Math.Round(ingredient.QuantityOnHand * 0.25m, 2, MidpointRounding.AwayFromZero),
+                LastUpdatedAt = DateTime.UtcNow
+            })
+            .ToList();
 
-                return new Ingredient
-                {
-                    Name = ingredient.Name,
-                    Unit = ingredient.Unit,
-                    CostPerUnit = ingredient.CostPerUnit,
-                    QuantityOnHand = quantityOnHand,
-                    ReorderLevel = Math.Round(quantityOnHand * 0.25m, 2, MidpointRounding.AwayFromZero),
-                    LastUpdatedAt = DateTime.UtcNow
-                };
-            }));
-
+        if (missingIngredients.Count > 0)
+        {
+            context.Ingredients.AddRange(missingIngredients);
             await context.SaveChangesAsync();
         }
 

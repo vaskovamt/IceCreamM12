@@ -26,7 +26,7 @@
                             <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="NewOrder">Нова поръчка</a></li>
                         }
 
-                        if (User.IsInRole("Worker") || User.IsInRole("Owner"))
+                        if (User.IsInRole("Worker"))
                         {
                             <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Dashboard">Табло служител</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Worker" asp-action="Orders">Чакащи поръчки</a></li>
@@ -44,7 +44,6 @@
                             <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Ingredients">Суровини</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Inventory">Склад</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Orders">Поръчки</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Owner" asp-action="Dashboard">Отчети</a></li>
                         }
                     }
                 </ul>

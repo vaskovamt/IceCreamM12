@@ -110,6 +110,24 @@ public class OwnerController : Controller
         return RedirectToAction(nameof(Inventory));
     }
 
+
+    [HttpGet]
+    public async Task<IActionResult> Users(CancellationToken cancellationToken)
+        => View(new UserManagementViewModel
+        {
+            Users = await _managementService.GetUsersWithRolesAsync(cancellationToken)
+        });
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PromoteToWorker(string userId, CancellationToken cancellationToken)
+    {
+        await ExecuteWithTempDataAsync(async () =>
+            await _managementService.PromoteToWorkerAsync(userId, cancellationToken));
+
+        return RedirectToAction(nameof(Users));
+    }
+
     [HttpGet]
     public async Task<IActionResult> Products(CancellationToken cancellationToken)
         => View("Products/Index", await _managementService.GetProductsAsync(cancellationToken));

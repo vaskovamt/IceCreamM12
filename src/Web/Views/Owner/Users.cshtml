@@ -1,0 +1,42 @@
+@model IceCreamM12.Web.Models.ViewModels.UserManagementViewModel
+@{
+    ViewData["Title"] = "Потребители";
+}
+
+<h1>Потребители</h1>
+<p class="text-muted">Собственикът може да повиши потребители до роля "служител".</p>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Име</th>
+            <th>Имейл</th>
+            <th>Роли</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var user in Model.Users)
+    {
+        <tr>
+            <td>@user.DisplayName</td>
+            <td>@user.Email</td>
+            <td>@string.Join(", ", user.Roles)</td>
+            <td class="text-end">
+                @if (user.CanPromoteToWorker)
+                {
+                    <form asp-action="PromoteToWorker" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@user.UserId" />
+                        <button type="submit" class="btn btn-sm btn-primary">Повиши до служител</button>
+                    </form>
+                }
+                else
+                {
+                    <span class="text-muted">—</span>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

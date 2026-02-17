@@ -20,6 +20,12 @@ public class OrdersManagementViewModel
     public List<Order> Orders { get; set; } = [];
 }
 
+
+public class UserManagementViewModel
+{
+    public List<UserManagementItem> Users { get; set; } = [];
+}
+
 public class InventoryManagementViewModel
 {
     public List<InventoryItem> InventoryItems { get; set; } = [];

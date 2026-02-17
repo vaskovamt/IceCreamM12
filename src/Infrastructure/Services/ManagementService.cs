@@ -1,7 +1,9 @@
 using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Application.Models;
 using IceCreamM12.Domain.Entities;
+using IceCreamM12.Domain.Identity;
 using IceCreamM12.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace IceCreamM12.Infrastructure.Services;
@@ -10,11 +12,13 @@ public class ManagementService : IManagementService
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly IAuditService _auditService;
+    private readonly UserManager<ApplicationUser>? _userManager;
 
-    public ManagementService(ApplicationDbContext dbContext, IAuditService auditService)
+    public ManagementService(ApplicationDbContext dbContext, IAuditService auditService, UserManager<ApplicationUser>? userManager = null)
     {
         _dbContext = dbContext;
         _auditService = auditService;
+        _userManager = userManager;
     }
 
     public async Task<OwnerDashboardData> GetOwnerDashboardAsync(CancellationToken cancellationToken)
@@ -194,6 +198,61 @@ public class ManagementService : IManagementService
             .OrderByDescending(a => a.PerformedAt)
             .Take(take)
             .ToListAsync(cancellationToken);
+
+
+    public async Task<List<UserManagementItem>> GetUsersWithRolesAsync(CancellationToken cancellationToken)
+    {
+        var userManager = _userManager ?? throw new InvalidOperationException("User management is not configured.");
+
+        var users = await _dbContext.Users
+            .OrderBy(user => user.DisplayName)
+            .ThenBy(user => user.Email)
+            .ToListAsync(cancellationToken);
+
+        var items = new List<UserManagementItem>(users.Count);
+        foreach (var user in users)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+            items.Add(new UserManagementItem
+            {
+                UserId = user.Id,
+                DisplayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.UserName ?? user.Email ?? user.Id : user.DisplayName,
+                Email = user.Email ?? string.Empty,
+                Roles = roles.Order().ToList(),
+                CanPromoteToWorker = !roles.Contains("Worker") && !roles.Contains("Owner")
+            });
+        }
+
+        return items;
+    }
+
+    public async Task PromoteToWorkerAsync(string userId, CancellationToken cancellationToken)
+    {
+        var userManager = _userManager ?? throw new InvalidOperationException("User management is not configured.");
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null)
+        {
+            throw new InvalidOperationException("Потребителят не е намерен.");
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        if (roles.Contains("Owner"))
+        {
+            throw new InvalidOperationException("Собственик не може да бъде променен на служител.");
+        }
+
+        if (roles.Contains("Worker"))
+        {
+            return;
+        }
+
+        var result = await userManager.AddToRoleAsync(user, "Worker");
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(error => error.Description)));
+        }
+    }
 
     public async Task<(List<DailyCheckResult> ProductResults, List<IngredientDailyCheckResult> IngredientResults)> ExecuteDailyCheckAsync(
         Dictionary<int, int> countedQuantities,

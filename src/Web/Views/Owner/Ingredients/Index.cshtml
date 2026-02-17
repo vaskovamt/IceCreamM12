@@ -1,3 +1,3 @@
 @model IEnumerable<IceCreamM12.Domain.Entities.Ingredient>
-<h1>Суровини</h1><a asp-action="CreateIngredient" class="btn btn-primary mb-2">Създай</a>
+<h1>Суровини</h1><p class="text-muted">Категория: ingridients</p><a asp-action="CreateIngredient" class="btn btn-primary mb-2">Създай</a>
 <table class="table"><thead><tr><th>Име</th><th>Мярка</th><th>Кол.</th><th></th></tr></thead><tbody>@foreach(var i in Model){<tr><td>@i.Name</td><td>@i.Unit</td><td>@i.QuantityOnHand</td><td><a asp-action="IngredientDetails" asp-route-id="@i.Id">Детайли</a> | <a asp-action="EditIngredient" asp-route-id="@i.Id">Редакция</a> | <a asp-action="DeleteIngredient" asp-route-id="@i.Id">Изтрий</a></td></tr>}</tbody></table>

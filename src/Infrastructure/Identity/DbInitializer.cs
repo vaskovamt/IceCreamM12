@@ -52,7 +52,7 @@ public static class DbInitializer
 
         Dictionary<string, Category> categoriesByName = await LoadCategoriesByNameAsync(context);
 
-        if (!categoriesByName.ContainsKey("IceCream") || !categoriesByName.ContainsKey("Cones"))
+        if (!categoriesByName.ContainsKey("IceCream") || !categoriesByName.ContainsKey("Cones") || !categoriesByName.ContainsKey("ingridients"))
         {
             if (!categoriesByName.ContainsKey("IceCream"))
             {
@@ -62,6 +62,11 @@ public static class DbInitializer
             if (!categoriesByName.ContainsKey("Cones"))
             {
                 context.Categories.Add(new Category { Name = "Cones", Description = "All cone products." });
+            }
+
+            if (!categoriesByName.ContainsKey("ingridients"))
+            {
+                context.Categories.Add(new Category { Name = "ingridients", Description = "Ingredient-related items." });
             }
 
             await context.SaveChangesAsync();

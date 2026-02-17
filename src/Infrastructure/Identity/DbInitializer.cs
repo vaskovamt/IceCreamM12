@@ -15,7 +15,7 @@ public static class DbInitializer
         RoleManager<IdentityRole> roleManager,
         IConfiguration configuration)
     {
-        IEnumerable<string> availableMigrations = await context.Database.GetMigrationsAsync();
+        IEnumerable<string> availableMigrations = context.Database.GetMigrations();
         if (availableMigrations.Any())
         {
             await context.Database.MigrateAsync();

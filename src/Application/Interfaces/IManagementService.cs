@@ -30,8 +30,9 @@ public interface IManagementService
 
     Task<List<InventoryItem>> GetInventoryItemsAsync(CancellationToken cancellationToken);
     Task<List<InventoryAudit>> GetRecentAuditsAsync(int take, CancellationToken cancellationToken);
-    Task<List<DailyCheckResult>> ExecuteDailyCheckAsync(
+    Task<(List<DailyCheckResult> ProductResults, List<IngredientDailyCheckResult> IngredientResults)> ExecuteDailyCheckAsync(
         Dictionary<int, int> countedQuantities,
+        Dictionary<int, decimal> countedIngredientQuantities,
         string? performedByUserId,
         CancellationToken cancellationToken);
 }

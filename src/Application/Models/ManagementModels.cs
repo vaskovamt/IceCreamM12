@@ -36,3 +36,14 @@ public class DailyCheckResult
     public int Difference => CountedQuantity - SystemQuantity;
     public bool HasMismatch => Difference != 0;
 }
+
+public class IngredientDailyCheckResult
+{
+    public int IngredientId { get; set; }
+    public string IngredientName { get; set; } = string.Empty;
+    public decimal SystemQuantity { get; set; }
+    public decimal CountedQuantity { get; set; }
+    public string Unit { get; set; } = string.Empty;
+    public decimal Difference => CountedQuantity - SystemQuantity;
+    public bool HasMismatch => Difference != 0;
+}

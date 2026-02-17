@@ -195,13 +195,14 @@ public class ManagementService : IManagementService
             .Take(take)
             .ToListAsync(cancellationToken);
 
-    public async Task<List<DailyCheckResult>> ExecuteDailyCheckAsync(
+    public async Task<(List<DailyCheckResult> ProductResults, List<IngredientDailyCheckResult> IngredientResults)> ExecuteDailyCheckAsync(
         Dictionary<int, int> countedQuantities,
+        Dictionary<int, decimal> countedIngredientQuantities,
         string? performedByUserId,
         CancellationToken cancellationToken)
     {
         var systemItems = await _dbContext.InventoryItems.Include(i => i.Product).ToListAsync(cancellationToken);
-        var results = new List<DailyCheckResult>();
+        var productResults = new List<DailyCheckResult>();
 
         foreach (var item in systemItems)
         {
@@ -218,7 +219,7 @@ public class ManagementService : IManagementService
                 SystemQuantity = item.QuantityOnHand,
                 CountedQuantity = counted
             };
-            results.Add(result);
+            productResults.Add(result);
 
             if (result.HasMismatch)
             {
@@ -235,8 +236,36 @@ public class ManagementService : IManagementService
             }
         }
 
+        var ingredients = await _dbContext.Ingredients.ToListAsync(cancellationToken);
+        var ingredientResults = new List<IngredientDailyCheckResult>();
+
+        foreach (var ingredient in ingredients)
+        {
+            var counted = countedIngredientQuantities.GetValueOrDefault(ingredient.Id, ingredient.QuantityOnHand);
+            if (counted < 0)
+            {
+                throw new InvalidOperationException($"Counted quantity cannot be negative for ingredient {ingredient.Id}.");
+            }
+
+            var ingredientResult = new IngredientDailyCheckResult
+            {
+                IngredientId = ingredient.Id,
+                IngredientName = ingredient.Name,
+                SystemQuantity = ingredient.QuantityOnHand,
+                CountedQuantity = counted,
+                Unit = ingredient.Unit
+            };
+            ingredientResults.Add(ingredientResult);
+
+            if (ingredientResult.HasMismatch)
+            {
+                ingredient.QuantityOnHand = ingredientResult.CountedQuantity;
+                ingredient.LastUpdatedAt = DateTime.UtcNow;
+            }
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return results;
+        return (productResults, ingredientResults);
     }
 
     private Task<List<Product>> GetLowStockProductsAsync(CancellationToken cancellationToken)

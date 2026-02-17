@@ -35,9 +35,14 @@ public class ManagementServiceTests
         var audit = new CapturingAuditService();
         var service = new ManagementService(context, audit);
 
-        var results = await service.ExecuteDailyCheckAsync(new Dictionary<int, int> { [product.Id] = 7 }, "u1", CancellationToken.None);
+        var (results, ingredientResults) = await service.ExecuteDailyCheckAsync(
+            new Dictionary<int, int> { [product.Id] = 7 },
+            new Dictionary<int, decimal>(),
+            "u1",
+            CancellationToken.None);
 
         Assert.Single(results);
+        Assert.Empty(ingredientResults);
         Assert.True(results[0].HasMismatch);
         Assert.Equal(-3, results[0].Difference);
 
@@ -68,7 +73,79 @@ public class ManagementServiceTests
         var service = new ManagementService(context, new CapturingAuditService());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.ExecuteDailyCheckAsync(new Dictionary<int, int> { [product.Id] = -1 }, "u1", CancellationToken.None));
+            service.ExecuteDailyCheckAsync(new Dictionary<int, int> { [product.Id] = -1 }, new Dictionary<int, decimal>(), "u1", CancellationToken.None));
+    }
+
+
+    [Fact]
+    public async Task ExecuteDailyCheckAsync_ReconcilesIngredients()
+    {
+        var dbName = $"daily-check-ingredient-{Guid.NewGuid()}";
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        await using var context = new ApplicationDbContext(options);
+
+        var ingredient = new Ingredient
+        {
+            Name = "Milk",
+            Unit = "l",
+            QuantityOnHand = 15m,
+            CostPerUnit = 1m,
+            ReorderLevel = 2m,
+            LastUpdatedAt = DateTime.UtcNow
+        };
+        context.Ingredients.Add(ingredient);
+        await context.SaveChangesAsync();
+
+        var service = new ManagementService(context, new CapturingAuditService());
+
+        var (productResults, ingredientResults) = await service.ExecuteDailyCheckAsync(
+            new Dictionary<int, int>(),
+            new Dictionary<int, decimal> { [ingredient.Id] = 13.5m },
+            "u1",
+            CancellationToken.None);
+
+        Assert.Empty(productResults);
+        Assert.Single(ingredientResults);
+        Assert.True(ingredientResults[0].HasMismatch);
+        Assert.Equal(-1.5m, ingredientResults[0].Difference);
+
+        var savedIngredient = await context.Ingredients.SingleAsync();
+        Assert.Equal(13.5m, savedIngredient.QuantityOnHand);
+    }
+
+    [Fact]
+    public async Task ExecuteDailyCheckAsync_ThrowsForNegativeIngredientCountedQuantity()
+    {
+        var dbName = $"daily-check-negative-ingredient-{Guid.NewGuid()}";
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        await using var context = new ApplicationDbContext(options);
+
+        var ingredient = new Ingredient
+        {
+            Name = "Sugar",
+            Unit = "kg",
+            QuantityOnHand = 5m,
+            CostPerUnit = 1m,
+            ReorderLevel = 1m,
+            LastUpdatedAt = DateTime.UtcNow
+        };
+        context.Ingredients.Add(ingredient);
+        await context.SaveChangesAsync();
+
+        var service = new ManagementService(context, new CapturingAuditService());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.ExecuteDailyCheckAsync(
+                new Dictionary<int, int>(),
+                new Dictionary<int, decimal> { [ingredient.Id] = -0.1m },
+                "u1",
+                CancellationToken.None));
     }
 
     private sealed class CapturingAuditService : IAuditService

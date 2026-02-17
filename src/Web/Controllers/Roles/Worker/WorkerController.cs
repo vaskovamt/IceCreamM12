@@ -272,7 +272,17 @@ public class WorkerController : Controller
                 CountedQuantity = i.QuantityOnHand
             }).ToList();
 
-        return View(new DailyCheckViewModel { Items = items });
+        var ingredientItems = (await _managementService.GetIngredientsAsync(cancellationToken))
+            .Select(i => new IngredientDailyCheckItemInputModel
+            {
+                IngredientId = i.Id,
+                IngredientName = i.Name,
+                Unit = i.Unit,
+                SystemQuantity = i.QuantityOnHand,
+                CountedQuantity = i.QuantityOnHand
+            }).ToList();
+
+        return View(new DailyCheckViewModel { Items = items, IngredientItems = ingredientItems });
     }
 
     [HttpPost]
@@ -280,7 +290,10 @@ public class WorkerController : Controller
     public async Task<IActionResult> DailyCheck(DailyCheckViewModel model, CancellationToken cancellationToken)
     {
         var input = model.Items.ToDictionary(i => i.ProductId, i => i.CountedQuantity);
-        model.Results = await _managementService.ExecuteDailyCheckAsync(input, User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken);
+        var ingredientInput = model.IngredientItems.ToDictionary(i => i.IngredientId, i => i.CountedQuantity);
+        var (productResults, ingredientResults) = await _managementService.ExecuteDailyCheckAsync(input, ingredientInput, User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken);
+        model.Results = productResults;
+        model.IngredientResults = ingredientResults;
         TempData["Success"] = "Дневната проверка е записана.";
         return View(model);
     }

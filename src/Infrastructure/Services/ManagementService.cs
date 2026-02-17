@@ -23,7 +23,7 @@ public class ManagementService : IManagementService
 
         return new OwnerDashboardData
         {
-            PendingOrdersCount = await _dbContext.Orders.CountAsync(o => o.Status.StartsWith("Pending"), cancellationToken),
+            PendingOrdersCount = await _dbContext.Orders.CountAsync(o => o.Status == "Pending", cancellationToken),
             TotalProducts = await _dbContext.Products.CountAsync(cancellationToken),
             LowStockProducts = lowStockProducts,
             RecentAudits = await GetRecentAuditsAsync(10, cancellationToken)
@@ -38,7 +38,7 @@ public class ManagementService : IManagementService
 
         return new WorkerDashboardData
         {
-            PendingOrdersCount = orders.Count(o => o.Status.StartsWith("Pending")),
+            PendingOrdersCount = orders.Count(o => o.Status == "Pending"),
             LowStockProducts = await GetLowStockProductsAsync(cancellationToken),
             TodayOperationsCount = await _dbContext.InventoryAudits.CountAsync(a => a.PerformedAt >= today, cancellationToken),
             Orders = orders,
@@ -56,7 +56,7 @@ public class ManagementService : IManagementService
 
         if (!string.IsNullOrWhiteSpace(status))
         {
-            query = query.Where(o => o.Status.StartsWith(status));
+            query = query.Where(o => o.Status == status);
         }
 
         return await query.OrderByDescending(o => o.OrderedAt).ToListAsync(cancellationToken);

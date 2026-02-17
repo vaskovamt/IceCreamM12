@@ -5,8 +5,15 @@ namespace IceCreamM12.Application.Models;
 public class OwnerDashboardData
 {
     public int PendingOrdersCount { get; set; }
+    public int ApprovedOrdersCount { get; set; }
+    public int RejectedOrdersCount { get; set; }
+    public int TotalOrdersCount { get; set; }
     public int TotalProducts { get; set; }
+    public int TotalInventoryUnits { get; set; }
+    public decimal PendingOrdersAmount { get; set; }
+    public decimal ApprovedOrdersAmount { get; set; }
     public List<Product> LowStockProducts { get; set; } = [];
+    public List<Order> LatestOrders { get; set; } = [];
     public List<InventoryAudit> RecentAudits { get; set; } = [];
 }
 

@@ -3,10 +3,37 @@
 <h1>Табло собственик</h1>
 <div class="row g-3 mb-4">
   <div class="col-md-3"><div class="card"><div class="card-body"><h6>Чакащи поръчки</h6><h3>@Model.Data.PendingOrdersCount</h3></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><h6>Одобрени поръчки</h6><h3>@Model.Data.ApprovedOrdersCount</h3></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><h6>Отказани поръчки</h6><h3>@Model.Data.RejectedOrdersCount</h3></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><h6>Всички поръчки</h6><h3>@Model.Data.TotalOrdersCount</h3></div></div></div>
+</div>
+<div class="row g-3 mb-4">
   <div class="col-md-3"><div class="card"><div class="card-body"><h6>Общо продукти</h6><h3>@Model.Data.TotalProducts</h3></div></div></div>
   <div class="col-md-3"><div class="card"><div class="card-body"><h6>Ниска наличност</h6><h3>@Model.Data.LowStockProducts.Count</h3></div></div></div>
+  <div class="col-md-3"><div class="card"><div class="card-body"><h6>Общо наличност (бр.)</h6><h3>@Model.Data.TotalInventoryUnits</h3></div></div></div>
   <div class="col-md-3"><div class="card"><div class="card-body"><h6>Последни одити</h6><h3>@Model.Data.RecentAudits.Count</h3></div></div></div>
 </div>
+<div class="row g-3 mb-4">
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Стойност чакащи поръчки</h6><h3>@Model.Data.PendingOrdersAmount.ToString("N2") лв.</h3></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Стойност одобрени поръчки</h6><h3>@Model.Data.ApprovedOrdersAmount.ToString("N2") лв.</h3></div></div></div>
+</div>
+<h4>Последни поръчки</h4>
+<table class="table table-sm table-hover">
+  <thead><tr><th>№</th><th>Клиент</th><th>Дата</th><th>Статус</th><th>Сума</th><th>Артикули</th></tr></thead>
+  <tbody>
+  @foreach (var order in Model.Data.LatestOrders)
+  {
+    <tr>
+      <td>@order.OrderNumber</td>
+      <td>@order.CustomerName</td>
+      <td>@order.OrderedAt.ToLocalTime()</td>
+      <td>@order.Status</td>
+      <td>@order.TotalAmount.ToString("N2") лв.</td>
+      <td>@order.Items.Sum(i => i.Quantity)</td>
+    </tr>
+  }
+  </tbody>
+</table>
 <h4>Продукти с ниска наличност</h4>
 <table class="table table-sm table-striped"><thead><tr><th>Продукт</th><th>Кол.</th></tr></thead><tbody>
 @foreach (var p in Model.Data.LowStockProducts){<tr><td>@p.Name</td><td>@(p.InventoryItem?.QuantityOnHand ?? 0)</td></tr>}

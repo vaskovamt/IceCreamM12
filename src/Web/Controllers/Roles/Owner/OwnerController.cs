@@ -185,56 +185,6 @@ public class OwnerController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Categories(CancellationToken cancellationToken)
-        => View("Categories/Index", await _managementService.GetCategoriesAsync(cancellationToken));
-
-    [HttpGet]
-    public IActionResult CreateCategory() => View("Categories/Create", new Category());
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateCategory(Category category, CancellationToken cancellationToken)
-    {
-        if (!ModelState.IsValid) return View("Categories/Create", category);
-        await _managementService.CreateCategoryAsync(category, cancellationToken);
-        TempData["Success"] = "Категорията е създадена.";
-        return RedirectToAction(nameof(Categories));
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> EditCategory(int id, CancellationToken cancellationToken)
-    {
-        var category = await _managementService.GetCategoryByIdAsync(id, cancellationToken);
-        return category is null ? NotFound() : View("Categories/Edit", category);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditCategory(Category category, CancellationToken cancellationToken)
-    {
-        if (!ModelState.IsValid) return View("Categories/Edit", category);
-        await _managementService.UpdateCategoryAsync(category, cancellationToken);
-        TempData["Success"] = "Категорията е обновена.";
-        return RedirectToAction(nameof(Categories));
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> DeleteCategory(int id, CancellationToken cancellationToken)
-    {
-        var category = await _managementService.GetCategoryByIdAsync(id, cancellationToken);
-        return category is null ? NotFound() : View("Categories/Delete", category);
-    }
-
-    [HttpPost, ActionName("DeleteCategory")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteCategoryConfirmed(int id, CancellationToken cancellationToken)
-    {
-        await _managementService.DeleteCategoryAsync(id, cancellationToken);
-        TempData["Success"] = "Категорията е изтрита.";
-        return RedirectToAction(nameof(Categories));
-    }
-
-    [HttpGet]
     public async Task<IActionResult> Ingredients(CancellationToken cancellationToken)
         => View("Ingredients/Index", await _managementService.GetIngredientsAsync(cancellationToken));
 

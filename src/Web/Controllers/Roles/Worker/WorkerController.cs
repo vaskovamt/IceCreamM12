@@ -266,7 +266,9 @@ public class WorkerController : Controller
     public async Task<IActionResult> Production(CancellationToken cancellationToken)
     {
         var ingredients = await _managementService.GetIngredientsAsync(cancellationToken);
-        var products = await _managementService.GetInventoryItemsAsync(cancellationToken);
+        var products = (await _managementService.GetInventoryItemsAsync(cancellationToken))
+            .Where(item => !IsConeProduct(item.Product?.Name))
+            .ToList();
 
         return View(new ProductionBatchViewModel
         {
@@ -295,6 +297,7 @@ public class WorkerController : Controller
         var ingredientMap = (await _managementService.GetIngredientsAsync(cancellationToken))
             .ToDictionary(i => i.Id);
         var productMap = (await _managementService.GetInventoryItemsAsync(cancellationToken))
+            .Where(item => !IsConeProduct(item.Product?.Name))
             .ToDictionary(i => i.ProductId);
 
         var ingredientInputs = model.IngredientInputs
@@ -466,6 +469,11 @@ public class WorkerController : Controller
         TempData["Success"] = "Дневната проверка е записана.";
         return View(model);
     }
+
+
+    private static bool IsConeProduct(string? productName)
+        => !string.IsNullOrWhiteSpace(productName)
+           && productName.Contains("Фунийка", StringComparison.OrdinalIgnoreCase);
 
     private async Task ExecuteWithTempDataAsync(Func<Task> action)
     {

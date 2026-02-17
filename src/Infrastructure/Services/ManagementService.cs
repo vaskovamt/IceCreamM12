@@ -20,12 +20,27 @@ public class ManagementService : IManagementService
     public async Task<OwnerDashboardData> GetOwnerDashboardAsync(CancellationToken cancellationToken)
     {
         var lowStockProducts = await GetLowStockProductsAsync(cancellationToken);
+        var allOrders = await _dbContext.Orders
+            .Include(o => o.Items)
+            .OrderByDescending(o => o.OrderedAt)
+            .ToListAsync(cancellationToken);
 
         return new OwnerDashboardData
         {
-            PendingOrdersCount = await _dbContext.Orders.CountAsync(o => o.Status == "Pending", cancellationToken),
+            PendingOrdersCount = allOrders.Count(o => o.Status == "Pending"),
+            ApprovedOrdersCount = allOrders.Count(o => o.Status == "Approved"),
+            RejectedOrdersCount = allOrders.Count(o => o.Status == "Rejected"),
+            TotalOrdersCount = allOrders.Count,
             TotalProducts = await _dbContext.Products.CountAsync(cancellationToken),
+            TotalInventoryUnits = await _dbContext.InventoryItems.SumAsync(i => i.QuantityOnHand, cancellationToken),
+            PendingOrdersAmount = allOrders
+                .Where(o => o.Status == "Pending")
+                .Sum(o => o.TotalAmount),
+            ApprovedOrdersAmount = allOrders
+                .Where(o => o.Status == "Approved")
+                .Sum(o => o.TotalAmount),
             LowStockProducts = lowStockProducts,
+            LatestOrders = allOrders.Take(5).ToList(),
             RecentAudits = await GetRecentAuditsAsync(10, cancellationToken)
         };
     }

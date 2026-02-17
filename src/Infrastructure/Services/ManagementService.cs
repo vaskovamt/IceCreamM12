@@ -23,7 +23,7 @@ public class ManagementService : IManagementService
 
         return new OwnerDashboardData
         {
-            PendingOrdersCount = await _dbContext.Orders.CountAsync(o => o.Status.StartsWith("Pending"), cancellationToken),
+            PendingOrdersCount = await _dbContext.Orders.CountAsync(o => o.Status == "Pending", cancellationToken),
             TotalProducts = await _dbContext.Products.CountAsync(cancellationToken),
             LowStockProducts = lowStockProducts,
             RecentAudits = await GetRecentAuditsAsync(10, cancellationToken)
@@ -38,7 +38,7 @@ public class ManagementService : IManagementService
 
         return new WorkerDashboardData
         {
-            PendingOrdersCount = orders.Count(o => o.Status.StartsWith("Pending")),
+            PendingOrdersCount = orders.Count(o => o.Status == "Pending"),
             LowStockProducts = await GetLowStockProductsAsync(cancellationToken),
             TodayOperationsCount = await _dbContext.InventoryAudits.CountAsync(a => a.PerformedAt >= today, cancellationToken),
             Orders = orders,
@@ -56,7 +56,7 @@ public class ManagementService : IManagementService
 
         if (!string.IsNullOrWhiteSpace(status))
         {
-            query = query.Where(o => o.Status.StartsWith(status));
+            query = query.Where(o => o.Status == status);
         }
 
         return await query.OrderByDescending(o => o.OrderedAt).ToListAsync(cancellationToken);
@@ -174,6 +174,11 @@ public class ManagementService : IManagementService
         foreach (var item in systemItems)
         {
             var counted = countedQuantities.GetValueOrDefault(item.ProductId, item.QuantityOnHand);
+            if (counted < 0)
+            {
+                throw new InvalidOperationException($"Counted quantity cannot be negative for product {item.ProductId}.");
+            }
+
             var result = new DailyCheckResult
             {
                 ProductId = item.ProductId,
@@ -185,10 +190,14 @@ public class ManagementService : IManagementService
 
             if (result.HasMismatch)
             {
+                var delta = result.CountedQuantity - result.SystemQuantity;
+                item.QuantityOnHand = result.CountedQuantity;
+                item.LastUpdatedAt = DateTime.UtcNow;
+
                 await _auditService.RecordInventoryChangeAsync(
                     item,
-                    0,
-                    $"Daily check mismatch: system={result.SystemQuantity}, counted={result.CountedQuantity}",
+                    delta,
+                    $"Daily check reconciliation: system={result.SystemQuantity}, counted={result.CountedQuantity}",
                     performedByUserId,
                     cancellationToken);
             }

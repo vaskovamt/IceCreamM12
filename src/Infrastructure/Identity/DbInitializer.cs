@@ -101,7 +101,7 @@ public static class DbInitializer
         (string Size, decimal Price)[] iceCreamSizes =
         [
             ("0.100kg", 0.87m),
-            ("0.300kg", 0.00m),
+            ("0.300kg", 1.79m),
             ("0.500kg", 2.66m),
             ("2.000kg", 8.95m),
             ("2.500kg", 13.04m),
@@ -121,16 +121,10 @@ public static class DbInitializer
         {
             foreach (string flavor in flavors)
             {
-                string description = $"Размер: {size}; Вкус: {flavor}";
-                if (size == "0.300kg")
-                {
-                    description = $"{description}; PRICE_TBD";
-                }
-
                 seededProducts.Add(new Product
                 {
                     Name = $"Сладолед {size} - {flavor}",
-                    Description = description,
+                    Description = $"Размер: {size}; Вкус: {flavor}",
                     Price = price,
                     CategoryId = iceCreamCategoryId
                 });
@@ -456,6 +450,11 @@ public static class DbInitializer
         if (!existingColumns.Contains("ContactPhone"))
         {
             await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN ContactPhone TEXT NULL;");
+        }
+
+        if (!existingColumns.Contains("RejectionReason"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN RejectionReason TEXT NULL;");
         }
     }
 

@@ -322,11 +322,9 @@ public class OrderService : IOrderService
         }
 
         order.Status = "Rejected";
-
-        if (!string.IsNullOrWhiteSpace(rejectionReason))
-        {
-            order.Status = $"Rejected: {rejectionReason}";
-        }
+        order.RejectionReason = string.IsNullOrWhiteSpace(rejectionReason)
+            ? null
+            : rejectionReason.Trim();
 
         await _dbContext.SaveChangesAsync(cancellationToken);
     }

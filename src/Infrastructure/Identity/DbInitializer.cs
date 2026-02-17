@@ -457,6 +457,11 @@ public static class DbInitializer
         {
             await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN ContactPhone TEXT NULL;");
         }
+
+        if (!existingColumns.Contains("RejectionReason"))
+        {
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE Orders ADD COLUMN RejectionReason TEXT NULL;");
+        }
     }
 
 }

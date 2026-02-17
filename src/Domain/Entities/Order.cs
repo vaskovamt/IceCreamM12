@@ -17,6 +17,9 @@ public class Order
     [MaxLength(100)]
     public string Status { get; set; } = "Pending";
 
+    [MaxLength(500)]
+    public string? RejectionReason { get; set; }
+
     [Required]
     [MaxLength(200)]
     public string CustomerName { get; set; } = string.Empty;

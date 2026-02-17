@@ -82,6 +82,19 @@ public class ClientController : Controller
             ModelState.AddModelError(nameof(model.PaymentMethod), "Изберете валиден начин на плащане.");
         }
 
+        if (model.IsBusinessOrder)
+        {
+            if (string.IsNullOrWhiteSpace(model.CompanyEik))
+            {
+                ModelState.AddModelError(nameof(model.CompanyEik), "ЕИК е задължителен за поръчка за бизнес.");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.InvoiceAddress))
+            {
+                ModelState.AddModelError(nameof(model.InvoiceAddress), "Адрес за фактура е задължителен за поръчка за бизнес.");
+            }
+        }
+
         if (!ModelState.IsValid)
         {
             if (model.Items.Count == 0)
@@ -110,8 +123,8 @@ public class ClientController : Controller
                 orderItems,
                 customerName,
                 customerEmail,
-                model.CompanyEik.Trim(),
-                model.InvoiceAddress.Trim(),
+                model.CompanyEik?.Trim() ?? string.Empty,
+                model.InvoiceAddress?.Trim() ?? string.Empty,
                 model.PaymentMethod,
                 model.VatNumber,
                 model.ContactPhone,

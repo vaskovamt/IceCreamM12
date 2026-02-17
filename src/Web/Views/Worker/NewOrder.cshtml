@@ -140,13 +140,18 @@
         <span asp-validation-for="CustomerEmail" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3 form-check">
+        <input asp-for="IsBusinessOrder" class="form-check-input" id="is-business-order" />
+        <label asp-for="IsBusinessOrder" class="form-check-label" for="is-business-order">За бизнес</label>
+    </div>
+
+    <div class="mb-3" id="business-eik-group">
         <label asp-for="CompanyEik" class="form-label"></label>
         <input asp-for="CompanyEik" class="form-control" maxlength="13" />
         <span asp-validation-for="CompanyEik" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" id="business-invoice-group">
         <label asp-for="InvoiceAddress" class="form-label"></label>
         <input asp-for="InvoiceAddress" class="form-control" />
         <span asp-validation-for="InvoiceAddress" class="text-danger"></span>
@@ -213,6 +218,9 @@
             const totalQuantitySummary = document.getElementById('summary-total-quantity');
             const statusSummary = document.getElementById('summary-status');
             const totalAmountSummary = document.getElementById('summary-total-amount');
+            const businessOrderCheckbox = document.getElementById('is-business-order');
+            const businessEikGroup = document.getElementById('business-eik-group');
+            const businessInvoiceGroup = document.getElementById('business-invoice-group');
 
             const currencyFormatter = new Intl.NumberFormat('bg-BG', {
                 style: 'currency',
@@ -225,6 +233,12 @@
             const productById = new Map(products.map(product => [String(product.id), product]));
 
             const unique = (values) => [...new Set(values)];
+
+            const toggleBusinessFields = () => {
+                const isBusinessOrder = businessOrderCheckbox?.checked ?? false;
+                businessEikGroup?.classList.toggle('d-none', !isBusinessOrder);
+                businessInvoiceGroup?.classList.toggle('d-none', !isBusinessOrder);
+            };
 
             const setOptions = (select, values) => {
                 select.innerHTML = values
@@ -415,6 +429,9 @@
                 submitOrderBtn.classList.remove('d-none');
                 submitOrderBtn.click();
             });
+
+            businessOrderCheckbox?.addEventListener('change', toggleBusinessFields);
+            toggleBusinessFields();
 
             initSelectors();
             syncHiddenInputs();

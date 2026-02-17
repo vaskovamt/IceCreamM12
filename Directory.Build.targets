@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Ensures a restore is executed when Visual Studio/MSBuild invokes Build directly
+    and the project.assets.json file has not been generated yet.
+  -->
+  <Target Name="AutoRestoreWhenAssetsMissing"
+          BeforeTargets="ResolvePackageAssets"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(RestoreRecursive)' != 'false' and !Exists('$(ProjectAssetsFile)')">
+    <Message Importance="High" Text="project.assets.json is missing for $(MSBuildProjectName). Running Restore automatically." />
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Restore"
+             Properties="RestoreRecursive=false" />
+  </Target>
+</Project>

@@ -77,16 +77,37 @@ public static class DbInitializer
         int iceCreamCategoryId = categoriesByName["IceCream"].Id;
         int conesCategoryId = categoriesByName["Cones"].Id;
 
+        (string Name, string Unit, decimal CostPerUnit, decimal MinQty, decimal MaxQty)[] ingredientCatalog =
+        [
+            ("Whole Milk", "L", 0.95m, 80m, 180m),
+            ("Heavy Cream", "L", 1.45m, 60m, 140m),
+            ("Granulated Sugar", "kg", 0.85m, 40m, 120m),
+            ("Vanilla Extract", "ml", 0.12m, 1500m, 5000m),
+            ("Stabilizer", "g", 0.05m, 2000m, 6500m),
+            ("Chocolate Chips", "kg", 3.25m, 20m, 90m)
+        ];
+
         if (!await context.Ingredients.AnyAsync())
         {
-            context.Ingredients.AddRange(
-                new Ingredient { Name = "Whole Milk", Unit = "L", CostPerUnit = 0.95m },
-                new Ingredient { Name = "Heavy Cream", Unit = "L", CostPerUnit = 1.45m },
-                new Ingredient { Name = "Granulated Sugar", Unit = "kg", CostPerUnit = 0.85m },
-                new Ingredient { Name = "Vanilla Extract", Unit = "ml", CostPerUnit = 0.12m },
-                new Ingredient { Name = "Stabilizer", Unit = "g", CostPerUnit = 0.05m },
-                new Ingredient { Name = "Chocolate Chips", Unit = "kg", CostPerUnit = 3.25m }
-            );
+            var random = new Random(12);
+
+            context.Ingredients.AddRange(ingredientCatalog.Select(ingredient =>
+            {
+                decimal quantityOnHand = Math.Round(
+                    ingredient.MinQty + ((decimal)random.NextDouble() * (ingredient.MaxQty - ingredient.MinQty)),
+                    2,
+                    MidpointRounding.AwayFromZero);
+
+                return new Ingredient
+                {
+                    Name = ingredient.Name,
+                    Unit = ingredient.Unit,
+                    CostPerUnit = ingredient.CostPerUnit,
+                    QuantityOnHand = quantityOnHand,
+                    ReorderLevel = Math.Round(quantityOnHand * 0.25m, 2, MidpointRounding.AwayFromZero),
+                    LastUpdatedAt = DateTime.UtcNow
+                };
+            }));
 
             await context.SaveChangesAsync();
         }

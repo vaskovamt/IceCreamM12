@@ -66,6 +66,33 @@ public class DailyCheckViewModel
     public List<IngredientDailyCheckResult> IngredientResults { get; set; } = [];
 }
 
+public class ProductionBatchViewModel
+{
+    public List<IngredientProductionInputModel> IngredientInputs { get; set; } = [];
+    public List<ProductProductionInputModel> ProductInputs { get; set; } = [];
+}
+
+public class IngredientProductionInputModel
+{
+    public int IngredientId { get; set; }
+    public string IngredientName { get; set; } = string.Empty;
+    public string Unit { get; set; } = string.Empty;
+    public decimal AvailableQuantity { get; set; }
+
+    [Range(typeof(decimal), "0", "79228162514264337593543950335")]
+    public decimal UsedQuantity { get; set; }
+}
+
+public class ProductProductionInputModel
+{
+    public int ProductId { get; set; }
+    public string ProductName { get; set; } = string.Empty;
+    public int AvailableQuantity { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int ProducedQuantity { get; set; }
+}
+
 public class DailyCheckItemInputModel
 {
     public int ProductId { get; set; }

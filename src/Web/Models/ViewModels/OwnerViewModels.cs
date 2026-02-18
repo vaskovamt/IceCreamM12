@@ -40,10 +40,14 @@ public class InventoryManagementViewModel
 public class InventoryOperationInputModel
 {
     [Required]
-    public int ProductId { get; set; }
+    public InventoryEntityType ItemType { get; set; } = InventoryEntityType.Product;
 
-    [Range(1, int.MaxValue)]
-    public int Quantity { get; set; }
+    public int? ProductId { get; set; }
+
+    public int? IngredientId { get; set; }
+
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+    public decimal Quantity { get; set; }
 
     [Required(ErrorMessage = "Причината е задължителна.")]
     public string Reason { get; set; } = string.Empty;
@@ -52,16 +56,30 @@ public class InventoryOperationInputModel
 public class InventoryReplaceInputModel
 {
     [Required]
-    public int FromProductId { get; set; }
+    public InventoryEntityType FromItemType { get; set; } = InventoryEntityType.Product;
+
+    public int? FromProductId { get; set; }
+
+    public int? FromIngredientId { get; set; }
 
     [Required]
-    public int ToProductId { get; set; }
+    public InventoryEntityType ToItemType { get; set; } = InventoryEntityType.Product;
 
-    [Range(1, int.MaxValue)]
-    public int Quantity { get; set; }
+    public int? ToProductId { get; set; }
+
+    public int? ToIngredientId { get; set; }
+
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+    public decimal Quantity { get; set; }
 
     [Required(ErrorMessage = "Причината е задължителна.")]
     public string Reason { get; set; } = string.Empty;
+}
+
+public enum InventoryEntityType
+{
+    Product = 1,
+    Ingredient = 2
 }
 
 public class DailyCheckViewModel

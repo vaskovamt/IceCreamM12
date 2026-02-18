@@ -20,6 +20,7 @@ public class ProductService : IProductService
     {
         return _inventoryService.ScrapProductAsync(
             productId,
+            null,
             quantity,
             reason,
             performedByUserId,
@@ -36,7 +37,9 @@ public class ProductService : IProductService
     {
         return _inventoryService.SwapProductAsync(
             originalProductId,
+            null,
             replacementProductId,
+            null,
             quantity,
             reason,
             performedByUserId,

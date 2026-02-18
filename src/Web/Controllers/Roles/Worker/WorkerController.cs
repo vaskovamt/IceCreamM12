@@ -256,14 +256,8 @@ public class WorkerController : Controller
         }
 
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.LoadInventoryAsync(
-                model.Load.ItemType == InventoryEntityType.Product ? model.Load.ProductId : null,
-                model.Load.ItemType == InventoryEntityType.Ingredient ? model.Load.IngredientId : null,
-                model.Load.Quantity,
-                model.Load.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
-
+            await _inventoryService.LoadInventoryAsync(model.Load.ProductId, null, model.Load.Quantity, model.Load.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
 
@@ -292,14 +286,8 @@ public class WorkerController : Controller
         }
 
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.ScrapProductAsync(
-                model.Scrap.ItemType == InventoryEntityType.Product ? model.Scrap.ProductId : null,
-                model.Scrap.ItemType == InventoryEntityType.Ingredient ? model.Scrap.IngredientId : null,
-                model.Scrap.Quantity,
-                model.Scrap.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
-
+            await _inventoryService.ScrapProductAsync(model.Scrap.ProductId, null, model.Scrap.Quantity, model.Scrap.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
 
@@ -333,16 +321,8 @@ public class WorkerController : Controller
         }
 
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.SwapProductAsync(
-                model.Replace.FromItemType == InventoryEntityType.Product ? model.Replace.FromProductId : null,
-                model.Replace.FromItemType == InventoryEntityType.Ingredient ? model.Replace.FromIngredientId : null,
-                model.Replace.ToItemType == InventoryEntityType.Product ? model.Replace.ToProductId : null,
-                model.Replace.ToItemType == InventoryEntityType.Ingredient ? model.Replace.ToIngredientId : null,
-                model.Replace.Quantity,
-                model.Replace.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
-
+            await _inventoryService.SwapProductAsync(model.Replace.FromProductId, null, model.Replace.ToProductId, null, model.Replace.Quantity, model.Replace.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
 

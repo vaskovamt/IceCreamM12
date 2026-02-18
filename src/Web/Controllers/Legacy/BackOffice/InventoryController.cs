@@ -26,24 +26,13 @@ public class InventoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Load(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
-        if (!TryValidateModel(model.Load, nameof(model.Load)) || !HasSelectedItem(model.Load))
-        {
-            if (!HasSelectedItem(model.Load))
-            {
-                ModelState.AddModelError(nameof(model.Load.ProductId), "Изберете продукт или суровина.");
-            }
-
-            return View(nameof(Index), await MergeWithInventoryDataAsync(model, cancellationToken));
-        }
-
-        await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.LoadInventoryAsync(
-                model.Load.ItemType == InventoryEntityType.Product ? model.Load.ProductId : null,
-                model.Load.ItemType == InventoryEntityType.Ingredient ? model.Load.IngredientId : null,
-                model.Load.Quantity,
-                model.Load.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
+        await _inventoryService.LoadInventoryAsync(
+            request.ProductId,
+            null,
+            request.Quantity,
+            request.Reason,
+            User.FindFirstValue(ClaimTypes.NameIdentifier),
+            cancellationToken);
 
         return RedirectToAction(nameof(Index));
     }
@@ -52,24 +41,13 @@ public class InventoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Scrap(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
-        if (!TryValidateModel(model.Scrap, nameof(model.Scrap)) || !HasSelectedItem(model.Scrap))
-        {
-            if (!HasSelectedItem(model.Scrap))
-            {
-                ModelState.AddModelError(nameof(model.Scrap.ProductId), "Изберете продукт или суровина.");
-            }
-
-            return View(nameof(Index), await MergeWithInventoryDataAsync(model, cancellationToken));
-        }
-
-        await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.ScrapProductAsync(
-                model.Scrap.ItemType == InventoryEntityType.Product ? model.Scrap.ProductId : null,
-                model.Scrap.ItemType == InventoryEntityType.Ingredient ? model.Scrap.IngredientId : null,
-                model.Scrap.Quantity,
-                model.Scrap.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
+        await _inventoryService.ScrapProductAsync(
+            request.ProductId,
+            null,
+            request.Quantity,
+            request.Reason,
+            User.FindFirstValue(ClaimTypes.NameIdentifier),
+            cancellationToken);
 
         return RedirectToAction(nameof(Index));
     }
@@ -78,31 +56,15 @@ public class InventoryController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Replace(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
-        if (!TryValidateModel(model.Replace, nameof(model.Replace)) || !HasSelectedFromItem(model.Replace) || !HasSelectedToItem(model.Replace))
-        {
-            if (!HasSelectedFromItem(model.Replace))
-            {
-                ModelState.AddModelError(nameof(model.Replace.FromProductId), "Изберете източник за замяна.");
-            }
-
-            if (!HasSelectedToItem(model.Replace))
-            {
-                ModelState.AddModelError(nameof(model.Replace.ToProductId), "Изберете цел за замяна.");
-            }
-
-            return View(nameof(Index), await MergeWithInventoryDataAsync(model, cancellationToken));
-        }
-
-        await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.SwapProductAsync(
-                model.Replace.FromItemType == InventoryEntityType.Product ? model.Replace.FromProductId : null,
-                model.Replace.FromItemType == InventoryEntityType.Ingredient ? model.Replace.FromIngredientId : null,
-                model.Replace.ToItemType == InventoryEntityType.Product ? model.Replace.ToProductId : null,
-                model.Replace.ToItemType == InventoryEntityType.Ingredient ? model.Replace.ToIngredientId : null,
-                model.Replace.Quantity,
-                model.Replace.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
+        await _inventoryService.SwapProductAsync(
+            request.FromProductId,
+            null,
+            request.ToProductId,
+            null,
+            request.Quantity,
+            request.Reason,
+            User.FindFirstValue(ClaimTypes.NameIdentifier),
+            cancellationToken);
 
         return RedirectToAction(nameof(Index));
     }

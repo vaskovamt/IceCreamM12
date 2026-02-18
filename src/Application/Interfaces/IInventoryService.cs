@@ -4,24 +4,28 @@ namespace IceCreamM12.Application.Interfaces;
 
 public interface IInventoryService
 {
-    Task<InventoryItem> LoadInventoryAsync(
-        int productId,
-        int quantity,
+    Task<InventoryItem?> LoadInventoryAsync(
+        int? productId,
+        int? ingredientId,
+        decimal quantity,
         string reason,
         string? performedByUserId,
         CancellationToken cancellationToken);
 
     Task ScrapProductAsync(
-        int productId,
-        int quantity,
+        int? productId,
+        int? ingredientId,
+        decimal quantity,
         string reason,
         string? performedByUserId,
         CancellationToken cancellationToken);
 
     Task SwapProductAsync(
-        int fromProductId,
-        int toProductId,
-        int quantity,
+        int? fromProductId,
+        int? fromIngredientId,
+        int? toProductId,
+        int? toIngredientId,
+        decimal quantity,
         string reason,
         string? performedByUserId,
         CancellationToken cancellationToken);

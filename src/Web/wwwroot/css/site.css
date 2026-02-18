@@ -1,0 +1,11 @@
+.home-hero-image {
+    width: min(100%, 900px);
+    height: auto;
+}
+
+.product-image {
+    height: 220px;
+    object-fit: contain;
+    background-color: #fff;
+    padding: 0.5rem;
+}

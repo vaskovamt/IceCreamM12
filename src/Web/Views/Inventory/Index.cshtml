@@ -1,4 +1,49 @@
-@model IceCreamM12.Web.Models.ViewModels.InventoryManagementViewModel
-@{ ViewData["Title"] = "Склад"; }
+@{
+    ViewData["Title"] = "Склад";
+}
 
-@await Html.PartialAsync("~/Views/Owner/Inventory.cshtml", Model)
+<h1>Складови операции</h1>
+
+<section>
+    <h2>Зареждане на склад</h2>
+    <form asp-action="Load" method="post">
+        @Html.AntiForgeryToken()
+        <label>Номер на продукт</label>
+        <input type="number" name="ProductId" />
+        <label>Количество</label>
+        <input type="number" name="Quantity" />
+        <label>Причина</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Зареди</button>
+    </form>
+</section>
+
+<section>
+    <h2>Бракуване от склад</h2>
+    <form asp-action="Scrap" method="post">
+        @Html.AntiForgeryToken()
+        <label>Номер на продукт</label>
+        <input type="number" name="ProductId" />
+        <label>Количество</label>
+        <input type="number" name="Quantity" />
+        <label>Причина</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Бракувай</button>
+    </form>
+</section>
+
+<section>
+    <h2>Прехвърляне в склад</h2>
+    <form asp-action="Swap" method="post">
+        @Html.AntiForgeryToken()
+        <label>От продукт №</label>
+        <input type="number" name="FromProductId" />
+        <label>Към продукт №</label>
+        <input type="number" name="ToProductId" />
+        <label>Количество</label>
+        <input type="number" name="Quantity" />
+        <label>Причина</label>
+        <input type="text" name="Reason" />
+        <button type="submit">Прехвърли</button>
+    </form>
+</section>

@@ -62,6 +62,7 @@ public class ProductionService : IProductionService
 
         await _inventoryService.LoadInventoryAsync(
             productId,
+            null,
             quantity,
             $"Production batch for {product.Name}",
             performedByUserId,

@@ -80,8 +80,8 @@
 
     @if (User?.Identity?.IsAuthenticated != true)
     {
-        <a asp-controller="Home"
-           asp-action="LoginRegister"
+        <a asp-area="Identity"
+           asp-page="/Account/Register"
            class="btn btn-primary btn-lg mt-2">
             Искаш да поръчаш?
         </a>

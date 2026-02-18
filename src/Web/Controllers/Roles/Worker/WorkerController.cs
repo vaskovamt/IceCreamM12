@@ -235,28 +235,8 @@ public class WorkerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Load(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
-        if (!TryValidateModel(model.Load, nameof(model.Load)) || !HasSelectedItem(model.Load))
-        {
-            if (!HasSelectedItem(model.Load))
-            {
-                ModelState.AddModelError(nameof(model.Load.ProductId), "Изберете продукт или суровина.");
-            }
-
-            model = new InventoryManagementViewModel
-            {
-                InventoryItems = await _managementService.GetInventoryItemsAsync(cancellationToken),
-                Ingredients = await _managementService.GetIngredientsAsync(cancellationToken),
-                RecentAudits = await _managementService.GetRecentAuditsAsync(10, cancellationToken),
-                Load = model.Load,
-                Scrap = model.Scrap,
-                Replace = model.Replace
-            };
-
-            return View(nameof(Inventory), model);
-        }
-
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.LoadInventoryAsync(model.Load.ProductId, null, model.Load.Quantity, model.Load.Reason,
+            await _inventoryService.LoadInventoryAsync(model.Load.ProductId, model.Load.Quantity, model.Load.Reason,
                 User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
@@ -265,28 +245,8 @@ public class WorkerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Scrap(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
-        if (!TryValidateModel(model.Scrap, nameof(model.Scrap)) || !HasSelectedItem(model.Scrap))
-        {
-            if (!HasSelectedItem(model.Scrap))
-            {
-                ModelState.AddModelError(nameof(model.Scrap.ProductId), "Изберете продукт или суровина.");
-            }
-
-            model = new InventoryManagementViewModel
-            {
-                InventoryItems = await _managementService.GetInventoryItemsAsync(cancellationToken),
-                Ingredients = await _managementService.GetIngredientsAsync(cancellationToken),
-                RecentAudits = await _managementService.GetRecentAuditsAsync(10, cancellationToken),
-                Load = model.Load,
-                Scrap = model.Scrap,
-                Replace = model.Replace
-            };
-
-            return View(nameof(Inventory), model);
-        }
-
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.ScrapProductAsync(model.Scrap.ProductId, null, model.Scrap.Quantity, model.Scrap.Reason,
+            await _inventoryService.ScrapProductAsync(model.Scrap.ProductId, model.Scrap.Quantity, model.Scrap.Reason,
                 User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
@@ -295,33 +255,8 @@ public class WorkerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Replace(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
-        if (!TryValidateModel(model.Replace, nameof(model.Replace)) || !HasSelectedFromItem(model.Replace) || !HasSelectedToItem(model.Replace))
-        {
-            if (!HasSelectedFromItem(model.Replace))
-            {
-                ModelState.AddModelError(nameof(model.Replace.FromProductId), "Изберете източник за замяна.");
-            }
-
-            if (!HasSelectedToItem(model.Replace))
-            {
-                ModelState.AddModelError(nameof(model.Replace.ToProductId), "Изберете цел за замяна.");
-            }
-
-            model = new InventoryManagementViewModel
-            {
-                InventoryItems = await _managementService.GetInventoryItemsAsync(cancellationToken),
-                Ingredients = await _managementService.GetIngredientsAsync(cancellationToken),
-                RecentAudits = await _managementService.GetRecentAuditsAsync(10, cancellationToken),
-                Load = model.Load,
-                Scrap = model.Scrap,
-                Replace = model.Replace
-            };
-
-            return View(nameof(Inventory), model);
-        }
-
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.SwapProductAsync(model.Replace.FromProductId, null, model.Replace.ToProductId, null, model.Replace.Quantity, model.Replace.Reason,
+            await _inventoryService.SwapProductAsync(model.Replace.FromProductId, model.Replace.ToProductId, model.Replace.Quantity, model.Replace.Reason,
                 User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
@@ -455,7 +390,6 @@ public class WorkerController : Controller
             {
                 await _inventoryService.LoadInventoryAsync(
                     input.ProductId,
-                    null,
                     input.ProducedQuantity,
                     "Производство",
                     userId,
@@ -540,16 +474,6 @@ public class WorkerController : Controller
     private static bool IsConeProduct(string? productName)
         => !string.IsNullOrWhiteSpace(productName)
            && productName.Contains("Фунийка", StringComparison.OrdinalIgnoreCase);
-
-
-    private static bool HasSelectedItem(InventoryOperationInputModel operation)
-        => operation.ItemType == InventoryEntityType.Product ? operation.ProductId.HasValue : operation.IngredientId.HasValue;
-
-    private static bool HasSelectedFromItem(InventoryReplaceInputModel operation)
-        => operation.FromItemType == InventoryEntityType.Product ? operation.FromProductId.HasValue : operation.FromIngredientId.HasValue;
-
-    private static bool HasSelectedToItem(InventoryReplaceInputModel operation)
-        => operation.ToItemType == InventoryEntityType.Product ? operation.ToProductId.HasValue : operation.ToIngredientId.HasValue;
 
     private async Task ExecuteWithTempDataAsync(Func<Task> action)
     {

@@ -236,8 +236,13 @@ public class WorkerController : Controller
     public async Task<IActionResult> Load(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.LoadInventoryAsync(model.Load.ProductId, model.Load.Quantity, model.Load.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+            await _inventoryService.LoadInventoryAsync(
+                model.Load.ProductId,
+                null,
+                model.Load.Quantity,
+                model.Load.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier),
+                cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
 
@@ -246,8 +251,13 @@ public class WorkerController : Controller
     public async Task<IActionResult> Scrap(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.ScrapProductAsync(model.Scrap.ProductId, model.Scrap.Quantity, model.Scrap.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+            await _inventoryService.ScrapProductAsync(
+                model.Scrap.ProductId,
+                null,
+                model.Scrap.Quantity,
+                model.Scrap.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier),
+                cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
 
@@ -256,8 +266,15 @@ public class WorkerController : Controller
     public async Task<IActionResult> Replace(InventoryManagementViewModel model, CancellationToken cancellationToken)
     {
         await ExecuteWithTempDataAsync(async () =>
-            await _inventoryService.SwapProductAsync(model.Replace.FromProductId, model.Replace.ToProductId, model.Replace.Quantity, model.Replace.Reason,
-                User.FindFirstValue(ClaimTypes.NameIdentifier), cancellationToken));
+            await _inventoryService.SwapProductAsync(
+                model.Replace.FromProductId,
+                null,
+                model.Replace.ToProductId,
+                null,
+                model.Replace.Quantity,
+                model.Replace.Reason,
+                User.FindFirstValue(ClaimTypes.NameIdentifier),
+                cancellationToken));
         return RedirectToAction(nameof(Inventory));
     }
 
@@ -390,6 +407,7 @@ public class WorkerController : Controller
             {
                 await _inventoryService.LoadInventoryAsync(
                     input.ProductId,
+                    null,
                     input.ProducedQuantity,
                     "Производство",
                     userId,

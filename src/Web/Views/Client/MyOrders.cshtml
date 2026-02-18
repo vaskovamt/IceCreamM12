@@ -3,7 +3,9 @@
     ViewData["Title"] = "Моите поръчки";
     var totalOrders = Model.Orders.Count;
     var totalItems = Model.Orders.Sum(order => order.Items.Sum(item => item.Quantity));
-    var totalAmount = Model.Orders.Sum(order => order.TotalAmount);
+    var totalAmount = Model.Orders
+        .Where(order => string.Equals(order.Status, "Approved", StringComparison.OrdinalIgnoreCase))
+        .Sum(order => order.TotalAmount);
 }
 
 <h1>Моите поръчки</h1>

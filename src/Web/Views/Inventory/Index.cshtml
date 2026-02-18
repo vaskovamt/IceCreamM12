@@ -7,7 +7,6 @@
 <section>
     <h2>Зареждане на склад</h2>
     <form asp-action="Load" method="post">
-        @Html.AntiForgeryToken()
         <label>Номер на продукт</label>
         <input type="number" name="ProductId" />
         <label>Количество</label>
@@ -21,7 +20,6 @@
 <section>
     <h2>Бракуване от склад</h2>
     <form asp-action="Scrap" method="post">
-        @Html.AntiForgeryToken()
         <label>Номер на продукт</label>
         <input type="number" name="ProductId" />
         <label>Количество</label>
@@ -35,7 +33,6 @@
 <section>
     <h2>Прехвърляне в склад</h2>
     <form asp-action="Swap" method="post">
-        @Html.AntiForgeryToken()
         <label>От продукт №</label>
         <input type="number" name="FromProductId" />
         <label>Към продукт №</label>

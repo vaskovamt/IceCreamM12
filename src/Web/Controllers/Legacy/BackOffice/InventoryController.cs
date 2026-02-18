@@ -27,7 +27,6 @@ public class InventoryController : Controller
     {
         await _inventoryService.LoadInventoryAsync(
             request.ProductId,
-            null,
             request.Quantity,
             request.Reason,
             User.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -42,7 +41,6 @@ public class InventoryController : Controller
     {
         await _inventoryService.ScrapProductAsync(
             request.ProductId,
-            null,
             request.Quantity,
             request.Reason,
             User.FindFirstValue(ClaimTypes.NameIdentifier),
@@ -57,9 +55,7 @@ public class InventoryController : Controller
     {
         await _inventoryService.SwapProductAsync(
             request.FromProductId,
-            null,
             request.ToProductId,
-            null,
             request.Quantity,
             request.Reason,
             User.FindFirstValue(ClaimTypes.NameIdentifier),

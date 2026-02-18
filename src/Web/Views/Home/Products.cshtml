@@ -53,6 +53,18 @@
         return supportedSizes.FirstOrDefault(productName.Contains);
     }
 
+    static string? ExtractIceCreamFlavor(string productName)
+    {
+        const string separator = " - ";
+        int separatorIndex = productName.IndexOf(separator, StringComparison.Ordinal);
+        if (separatorIndex < 0)
+        {
+            return null;
+        }
+
+        return productName[(separatorIndex + separator.Length)..].Trim();
+    }
+
     static string? ExtractConeType(string productName)
     {
         string[] coneTypes = ["Вафлено рогче", "Вафлена Чашка", "Захарно рогче"];
@@ -95,6 +107,13 @@
         string? productSize = ExtractIceCreamSize(product.Name);
         productImages.TryGetValue(productSize ?? string.Empty, out string? productImage);
         sizeDescriptions.TryGetValue(productSize ?? string.Empty, out string? sizeDescription);
+        string availableFlavors = string.Join(", ",
+            Model
+                .Where(item => ExtractIceCreamSize(item.Name) == productSize)
+                .Select(item => ExtractIceCreamFlavor(item.Name))
+                .Where(flavor => !string.IsNullOrWhiteSpace(flavor))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(flavor => flavor));
 
         <div class="col-md-6 col-lg-4">
             <div class="card shadow-sm h-100">
@@ -106,13 +125,16 @@
                          width="640"
                          height="220"
                          loading="lazy"
-                         decoding="async"
-                         style="height: 220px; object-fit: cover;" />
+                         decoding="async" />
                 }
 
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@productSize</h5>
                     <p class="card-text mb-2">@GetOptimizedMenuDescription(sizeDescription, "Описание за този размер не е налично.")</p>
+                    <p class="card-text mb-2">
+                        <strong>Вкусове:</strong>
+                        @(string.IsNullOrWhiteSpace(availableFlavors) ? "Няма налични вкусове." : availableFlavors)
+                    </p>
                     <p class="card-text mt-auto">
                         Цена от: <strong>@product.Price.ToString("C")</strong>
                     </p>
@@ -141,8 +163,7 @@
                          width="640"
                          height="220"
                          loading="lazy"
-                         decoding="async"
-                         style="height: 220px; object-fit: cover;" />
+                         decoding="async" />
                 }
 
                 <div class="card-body d-flex flex-column">

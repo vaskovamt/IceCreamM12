@@ -243,15 +243,24 @@ public class ManagementService : IManagementService
             throw new InvalidOperationException("Собственик не може да бъде променен на служител.");
         }
 
-        if (roles.Contains("Worker"))
+        if (!roles.Contains("Worker"))
+        {
+            var addWorkerResult = await userManager.AddToRoleAsync(user, "Worker");
+            if (!addWorkerResult.Succeeded)
+            {
+                throw new InvalidOperationException(string.Join("; ", addWorkerResult.Errors.Select(error => error.Description)));
+            }
+        }
+
+        if (!roles.Contains("Client"))
         {
             return;
         }
 
-        var result = await userManager.AddToRoleAsync(user, "Worker");
-        if (!result.Succeeded)
+        var removeClientResult = await userManager.RemoveFromRoleAsync(user, "Client");
+        if (!removeClientResult.Succeeded)
         {
-            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(error => error.Description)));
+            throw new InvalidOperationException(string.Join("; ", removeClientResult.Errors.Select(error => error.Description)));
         }
     }
 
@@ -271,26 +280,22 @@ public class ManagementService : IManagementService
             throw new InvalidOperationException("Собственик не може да бъде променен на клиент.");
         }
 
-        if (!roles.Contains("Worker"))
+        if (roles.Contains("Worker"))
         {
-            return;
+            var removeResult = await userManager.RemoveFromRoleAsync(user, "Worker");
+            if (!removeResult.Succeeded)
+            {
+                throw new InvalidOperationException(string.Join("; ", removeResult.Errors.Select(error => error.Description)));
+            }
         }
 
-        var removeResult = await userManager.RemoveFromRoleAsync(user, "Worker");
-        if (!removeResult.Succeeded)
+        if (!roles.Contains("Client"))
         {
-            throw new InvalidOperationException(string.Join("; ", removeResult.Errors.Select(error => error.Description)));
-        }
-
-        if (roles.Contains("Client"))
-        {
-            return;
-        }
-
-        var addResult = await userManager.AddToRoleAsync(user, "Client");
-        if (!addResult.Succeeded)
-        {
-            throw new InvalidOperationException(string.Join("; ", addResult.Errors.Select(error => error.Description)));
+            var addResult = await userManager.AddToRoleAsync(user, "Client");
+            if (!addResult.Succeeded)
+            {
+                throw new InvalidOperationException(string.Join("; ", addResult.Errors.Select(error => error.Description)));
+            }
         }
     }
 

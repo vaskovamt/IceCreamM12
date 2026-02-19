@@ -2,54 +2,59 @@
     ViewData["Title"] = "Вход / Регистрация";
 }
 
-<h1>Вход / Регистрация</h1>
-
-<p>Влезте в своя IceCreamM12 акаунт или създайте нов.</p>
-
-<section>
-    <h2>Вход</h2>
-    <p>Използвайте съществуващите си данни за вход и вижте таблото си.</p>
-    <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Към вход</a>
-</section>
-
-<section class="mt-4">
-    <h2>Демо акаунти</h2>
-    <p>Ако искате да тествате различните портали, влезте с някой от профилите по-долу:</p>
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered align-middle">
-            <thead>
-                <tr>
-                    <th>Роля</th>
-                    <th>Имейл</th>
-                    <th>Парола</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Собственик</td>
-                    <td><code>owner@icecreamm12.local</code></td>
-                    <td><code>Owner123!</code></td>
-                </tr>
-                <tr>
-                    <td>Служител</td>
-                    <td><code>worker@icecreamm12.local</code></td>
-                    <td><code>Worker123!</code></td>
-                </tr>
-                <tr>
-                    <td>Клиент</td>
-                    <td><code>client@icecreamm12.local</code></td>
-                    <td><code>Client123!</code></td>
-                </tr>
-            </tbody>
-        </table>
+<section class="public-page-wrap">
+    <div class="public-page-head">
+        <h1>Вход / Регистрация</h1>
+        <p>Влез в своя IceCreamM12 акаунт или създай нов за бързи поръчки.</p>
     </div>
-    <p class="mb-0">
-        Ако входът не работи, изтрийте <code>src/Web/app.db</code> и рестартирайте приложението, за да се създадат отново потребителите.
-    </p>
-</section>
 
-<section class="mt-4">
-    <h2>Регистрация</h2>
-    <p>Създайте нов акаунт, за да правите поръчки и да следите изпълнението им.</p>
-    <a class="btn btn-outline-primary" asp-area="Identity" asp-page="/Account/Register">Създай акаунт</a>
+    <div class="public-info-grid two-col">
+        <article class="public-info-card">
+            <h2>Вход</h2>
+            <p>Използвай съществуващите си данни за вход и достъпи таблото си.</p>
+            <a class="btn btn-lux-primary" asp-area="Identity" asp-page="/Account/Login">Към вход</a>
+        </article>
+
+        <article class="public-info-card">
+            <h2>Регистрация</h2>
+            <p>Създай нов акаунт, за да правиш поръчки и да следиш изпълнението им.</p>
+            <a class="btn btn-lux-outline" asp-area="Identity" asp-page="/Account/Register">Създай акаунт</a>
+        </article>
+    </div>
+
+    <article class="public-content-card mt-4">
+        <h2 class="h4 mb-3">Демо акаунти</h2>
+        <p>Ако искаш да тестваш различните портали, използвай някой от профилите по-долу:</p>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-3 public-table">
+                <thead>
+                    <tr>
+                        <th>Роля</th>
+                        <th>Имейл</th>
+                        <th>Парола</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Собственик</td>
+                        <td><code>owner@icecreamm12.local</code></td>
+                        <td><code>Owner123!</code></td>
+                    </tr>
+                    <tr>
+                        <td>Служител</td>
+                        <td><code>worker@icecreamm12.local</code></td>
+                        <td><code>Worker123!</code></td>
+                    </tr>
+                    <tr>
+                        <td>Клиент</td>
+                        <td><code>client@icecreamm12.local</code></td>
+                        <td><code>Client123!</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="mb-0 text-muted-light">
+            Ако входът не работи, изтрий <code>src/Web/app.db</code> и рестартирай приложението, за да се създадат отново потребителите.
+        </p>
+    </article>
 </section>

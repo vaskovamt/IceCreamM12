@@ -1,11 +1,210 @@
+:root {
+    --lux-bg: #0f0f16;
+    --lux-surface: #171723;
+    --lux-surface-soft: #202033;
+    --lux-text: #f5f1e8;
+    --lux-muted: #c8c1b5;
+    --lux-gold: #d9b26b;
+    --lux-gold-soft: #f2d7a5;
+}
+
+body {
+    background: radial-gradient(circle at top right, #222236 0%, var(--lux-bg) 45%, #0a0a0f 100%);
+    color: var(--lux-text);
+    min-height: 100vh;
+}
+
+.navbar.lux-navbar {
+    background: rgba(9, 9, 14, 0.88) !important;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(217, 178, 107, 0.25);
+}
+
+.navbar.lux-navbar .navbar-brand,
+.navbar.lux-navbar .nav-link {
+    color: var(--lux-text) !important;
+}
+
+.navbar.lux-navbar .nav-link:hover,
+.navbar.lux-navbar .nav-link:focus {
+    color: var(--lux-gold-soft) !important;
+}
+
 .home-hero-image {
-    width: min(100%, 900px);
+    width: 100%;
     height: auto;
+    border-radius: 1rem;
+    border: 1px solid rgba(217, 178, 107, 0.45);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.lux-badge {
+    display: inline-block;
+    border: 1px solid rgba(217, 178, 107, 0.55);
+    color: var(--lux-gold-soft);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.lux-title {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.lux-subtitle {
+    color: var(--lux-muted);
+    max-width: 60ch;
+}
+
+.btn-lux-primary {
+    background: linear-gradient(135deg, #b88339, #e2c283);
+    border: none;
+    color: #1a140b;
+    font-weight: 600;
+}
+
+.btn-lux-primary:hover {
+    color: #1a140b;
+    filter: brightness(1.05);
+}
+
+.btn-lux-outline {
+    border: 1px solid rgba(217, 178, 107, 0.6);
+    color: var(--lux-gold-soft);
+}
+
+.btn-lux-outline:hover {
+    background: rgba(217, 178, 107, 0.12);
+    color: #ffe7bd;
+}
+
+.lux-stat-card,
+.lux-feature-card,
+.public-content-card,
+.public-info-card,
+.product-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(217, 178, 107, 0.22);
+    border-radius: 0.9rem;
+    padding: 1rem;
+    height: 100%;
+    color: var(--lux-text);
+}
+
+.lux-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--lux-gold-soft);
+}
+
+.lux-stat-label {
+    font-size: 0.85rem;
+    color: var(--lux-muted);
+}
+
+.lux-image-wrap {
+    position: relative;
+}
+
+.lux-floating-note {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    background: rgba(14, 14, 22, 0.8);
+    border: 1px solid rgba(217, 178, 107, 0.35);
+    color: var(--lux-gold-soft);
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+}
+
+.lux-feature-grid,
+.public-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.lux-feature-card h3,
+.public-page-wrap h2,
+.product-card .card-title {
+    color: var(--lux-gold-soft);
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+}
+
+.lux-feature-card p,
+.public-page-wrap p,
+.product-card .card-text {
+    color: var(--lux-muted);
+    margin-bottom: 0;
+}
+
+.public-page-wrap {
+    margin-bottom: 2rem;
+}
+
+.public-page-head {
+    margin-bottom: 1.25rem;
+}
+
+.public-page-head h1 {
+    color: var(--lux-text);
+}
+
+.public-content-card,
+.public-info-card {
+    padding: 1.25rem;
+}
+
+.public-info-grid.two-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.public-table code {
+    color: #ffe7bd;
+}
+
+.text-muted-light {
+    color: var(--lux-muted);
+}
+
+.product-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.product-card .card-body {
+    background: transparent;
 }
 
 .product-image {
-    height: 220px;
-    object-fit: contain;
-    background-color: #fff;
-    padding: 0.5rem;
+    height: 240px;
+    object-fit: cover;
+    background: linear-gradient(135deg, rgba(242, 215, 165, 0.07), rgba(255, 255, 255, 0.02));
+    padding: 0;
+}
+
+.product-badge {
+    background: rgba(217, 178, 107, 0.22);
+    color: var(--lux-gold-soft);
+    border: 1px solid rgba(217, 178, 107, 0.4);
+}
+
+.product-badge-cone {
+    background: rgba(108, 92, 231, 0.22);
+    border-color: rgba(108, 92, 231, 0.45);
+    color: #d6cdff;
+}
+
+@media (max-width: 991px) {
+    .lux-feature-grid,
+    .public-info-grid,
+    .public-info-grid.two-col {
+        grid-template-columns: 1fr;
+    }
 }

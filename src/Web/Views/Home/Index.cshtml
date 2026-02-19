@@ -2,14 +2,62 @@
     ViewData["Title"] = "Начало";
 }
 
-<div class="text-center py-4">
-    <h1 class="display-5 mb-3">Добре дошли в Сладоледи ВАМТ</h1>
-    <p class="lead mb-4">Радваме се, че сте тук! Разгледайте нашите продукти и открийте любимия си вкус.</p>
-</div>
+<section class="lux-hero mb-5">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-6">
+            <span class="lux-badge">Премиум сладоледено изживяване</span>
+            <h1 class="lux-title mt-3">Добре дошли в Сладоледи ВАМТ</h1>
+            <p class="lux-subtitle mt-3">
+                Ръчно създадени рецепти, подбрани съставки и стилна атмосфера за хора,
+                които търсят не просто вкус, а преживяване.
+            </p>
+            <div class="d-flex flex-wrap gap-3 mt-4">
+                <a class="btn btn-lux-primary px-4 py-2" asp-controller="Home" asp-action="Products">Разгледай колекцията</a>
+                <a class="btn btn-lux-outline px-4 py-2" asp-controller="Home" asp-action="Contact">Резервирай дегустация</a>
+            </div>
 
+            <div class="row g-3 mt-4">
+                <div class="col-4">
+                    <div class="lux-stat-card">
+                        <div class="lux-stat-value">30+</div>
+                        <div class="lux-stat-label">Вкуса</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="lux-stat-card">
+                        <div class="lux-stat-value">12k</div>
+                        <div class="lux-stat-label">Доволни клиенти</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="lux-stat-card">
+                        <div class="lux-stat-value">4.9★</div>
+                        <div class="lux-stat-label">Оценка</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<div class="row justify-content-center pb-4">
-    <div class="col-12 col-md-10 col-lg-8">
-        <img src="~/images/shop.jpg" class="home-hero-image img-fluid rounded shadow d-block mx-auto" alt="Магазин за сладолед" />
+        <div class="col-lg-6">
+            <div class="lux-image-wrap">
+                <img src="~/images/shop.jpg" class="home-hero-image img-fluid" alt="Луксозен магазин за сладолед" />
+                <div class="lux-floating-note">Нови авторски вкусове всяка седмица</div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<section class="lux-feature-grid mb-4">
+    <article class="lux-feature-card">
+        <h3>Селектирани продукти</h3>
+        <p>Работим с прясно мляко, истинска ванилия и първокласни съставки без компромис в качеството.</p>
+    </article>
+    <article class="lux-feature-card">
+        <h3>Модерна визия</h3>
+        <p>Елегантна презентация и изчистен стил, който превръща всяка поръчка в специален момент.</p>
+    </article>
+    <article class="lux-feature-card">
+        <h3>Персонално обслужване</h3>
+        <p>Помагаме ти да създадеш перфектната комбинация от вкусове за всеки повод.</p>
+    </article>
+</section>

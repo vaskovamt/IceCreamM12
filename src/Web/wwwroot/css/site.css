@@ -136,10 +136,30 @@ body {
 }
 
 .product-image {
-    height: 220px;
-    object-fit: contain;
-    background-color: #fff;
-    padding: 0.5rem;
+    height: 240px;
+    object-fit: cover;
+    background: linear-gradient(135deg, rgba(242, 215, 165, 0.07), rgba(255, 255, 255, 0.02));
+    padding: 0;
+}
+
+.product-badge {
+    background: rgba(217, 178, 107, 0.22);
+    color: var(--lux-gold-soft);
+    border: 1px solid rgba(217, 178, 107, 0.4);
+}
+
+.product-badge-cone {
+    background: rgba(108, 92, 231, 0.22);
+    border-color: rgba(108, 92, 231, 0.45);
+    color: #d6cdff;
+}
+
+@media (max-width: 991px) {
+    .lux-feature-grid,
+    .public-info-grid,
+    .public-info-grid.two-col {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 991px) {

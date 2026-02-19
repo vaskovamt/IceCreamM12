@@ -187,18 +187,33 @@ public class OwnerController : Controller
     public async Task<IActionResult> CreateProduct(CancellationToken cancellationToken)
     {
         await LoadCategoriesAsync(cancellationToken);
-        return View("Products/Create", new Product());
+        return View("Products/Create", new ProductCreateViewModel());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateProduct(Product product, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateProduct(ProductCreateViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
             await LoadCategoriesAsync(cancellationToken);
-            return View("Products/Create", product);
+            return View("Products/Create", model);
         }
+
+        var product = new Product
+        {
+            Name = model.Name,
+            Description = model.Description,
+            Price = model.Price,
+            CategoryId = model.CategoryId,
+            InventoryItem = new InventoryItem
+            {
+                QuantityOnHand = model.QuantityOnHand,
+                ReorderLevel = 0,
+                StorageLocation = "Main Freezer",
+                LastUpdatedAt = DateTime.UtcNow
+            }
+        };
 
         await _managementService.CreateProductAsync(product, cancellationToken);
         TempData["Success"] = "Продуктът е създаден успешно.";
@@ -212,17 +227,53 @@ public class OwnerController : Controller
         if (product is null) return NotFound();
 
         await LoadCategoriesAsync(cancellationToken);
-        return View("Products/Edit", product);
+        return View("Products/Edit", new ProductEditViewModel
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            CategoryId = product.CategoryId,
+            QuantityOnHand = product.InventoryItem?.QuantityOnHand ?? 0
+        });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditProduct(Product product, CancellationToken cancellationToken)
+    public async Task<IActionResult> EditProduct(ProductEditViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
             await LoadCategoriesAsync(cancellationToken);
-            return View("Products/Edit", product);
+            return View("Products/Edit", model);
+        }
+
+        var product = await _managementService.GetProductByIdAsync(model.Id, cancellationToken);
+        if (product is null)
+        {
+            return NotFound();
+        }
+
+        product.Name = model.Name;
+        product.Description = model.Description;
+        product.Price = model.Price;
+        product.CategoryId = model.CategoryId;
+
+        if (product.InventoryItem is null)
+        {
+            product.InventoryItem = new InventoryItem
+            {
+                ProductId = product.Id,
+                QuantityOnHand = model.QuantityOnHand,
+                ReorderLevel = 0,
+                StorageLocation = "Main Freezer",
+                LastUpdatedAt = DateTime.UtcNow
+            };
+        }
+        else
+        {
+            product.InventoryItem.QuantityOnHand = model.QuantityOnHand;
+            product.InventoryItem.LastUpdatedAt = DateTime.UtcNow;
         }
 
         await _managementService.UpdateProductAsync(product, cancellationToken);

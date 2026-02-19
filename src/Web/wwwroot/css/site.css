@@ -1,11 +1,241 @@
+:root {
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-soft: #f2f4f9;
+    --text: #1f2937;
+    --muted: #4b5563;
+    --primary: #7c3aed;
+    --primary-dark: #5b21b6;
+    --accent: #d97706;
+    --border: #e5e7eb;
+    --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+body {
+    background: radial-gradient(circle at 15% -10%, #eef2ff 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+main.container {
+    padding-bottom: 2rem;
+}
+
+.navbar.lux-navbar {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 3px 20px rgba(17, 24, 39, 0.06);
+}
+
+.navbar.lux-navbar .navbar-brand {
+    color: #111827 !important;
+    font-weight: 700;
+}
+
+.navbar.lux-navbar .nav-link {
+    color: #374151 !important;
+    font-weight: 500;
+}
+
+.navbar.lux-navbar .nav-link:hover,
+.navbar.lux-navbar .nav-link:focus {
+    color: var(--primary) !important;
+}
+
 .home-hero-image {
-    width: min(100%, 900px);
+    width: 100%;
     height: auto;
+    border-radius: 1rem;
+    border: 1px solid #dbe3f2;
+    box-shadow: var(--shadow);
+}
+
+.lux-badge {
+    display: inline-block;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    color: #4338ca;
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.lux-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    color: #111827;
+}
+
+.lux-subtitle {
+    color: var(--muted);
+    max-width: 58ch;
+}
+
+.btn-lux-primary {
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-lux-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: #fff;
+}
+
+.btn-lux-outline {
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    background: #fff;
+}
+
+.btn-lux-outline:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.lux-stat-card,
+.lux-feature-card,
+.public-content-card,
+.public-info-card,
+.product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1rem;
+    height: 100%;
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+
+.lux-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.lux-stat-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.lux-image-wrap {
+    position: relative;
+}
+
+.lux-floating-note {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--border);
+    color: #0f172a;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.lux-feature-grid,
+.public-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.lux-feature-card h3,
+.public-page-wrap h2,
+.product-card .card-title {
+    color: #111827;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.lux-feature-card p,
+.public-page-wrap p,
+.public-page-wrap li,
+.product-card .card-text {
+    color: var(--muted);
+}
+
+.public-page-wrap {
+    margin-bottom: 2rem;
+}
+
+.public-page-head {
+    margin-bottom: 1.25rem;
+}
+
+.public-page-head h1 {
+    color: #111827;
+    font-weight: 800;
+}
+
+.public-content-card,
+.public-info-card {
+    padding: 1.25rem;
+}
+
+.public-info-grid.two-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.public-table {
+    border: 1px solid var(--border);
+}
+
+.public-table th,
+.public-table td {
+    color: #e5e7eb;
+}
+
+.public-table code {
+    color: #fde68a;
+}
+
+.text-muted-light {
+    color: var(--muted);
+}
+
+.product-card {
+    overflow: hidden;
+    padding: 0;
+}
+
+.product-card .card-body {
+    background: transparent;
 }
 
 .product-image {
-    height: 220px;
+    height: 240px;
     object-fit: contain;
-    background-color: #fff;
-    padding: 0.5rem;
+    background: linear-gradient(180deg, #f8fafc, #eef2ff);
+    padding: 0.75rem;
+}
+
+.product-badge {
+    background: #ede9fe;
+    color: #4c1d95;
+    border: 1px solid #c4b5fd;
+}
+
+.product-badge-cone {
+    background: #ffedd5;
+    border-color: #fdba74;
+    color: #9a3412;
+}
+
+@media (max-width: 991px) {
+    .lux-feature-grid,
+    .public-info-grid,
+    .public-info-grid.two-col {
+        grid-template-columns: 1fr;
+    }
 }

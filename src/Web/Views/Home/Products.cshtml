@@ -86,7 +86,8 @@
         .ToList();
 }
 
-<div class="text-center mb-4">
+<section class="public-page-wrap">
+<div class="public-page-head text-center mb-4">
     <h1 class="display-5">Продукти</h1>
     <p class="lead">Разгледайте пълния ни каталог.</p>
 
@@ -94,7 +95,7 @@
     {
         <a asp-area="Identity"
            asp-page="/Account/Register"
-           class="btn btn-primary btn-lg mt-2">
+           class="btn btn-lux-primary btn-lg mt-2">
             Искаш да поръчаш?
         </a>
     }
@@ -116,7 +117,7 @@
                 .OrderBy(flavor => flavor));
 
         <div class="col-md-6 col-lg-4">
-            <div class="card shadow-sm h-100">
+            <div class="card product-card h-100">
                 @if (!string.IsNullOrWhiteSpace(productImage))
                 {
                     <img src="@productImage"
@@ -138,7 +139,7 @@
                     <p class="card-text mt-auto">
                         Цена от: <strong>@product.Price.ToString("C")</strong>
                     </p>
-                    <span class="badge bg-primary">Сладолед</span>
+                    <span class="badge product-badge">Сладолед</span>
                 </div>
             </div>
         </div>
@@ -154,7 +155,7 @@
         coneDescriptions.TryGetValue(coneType ?? string.Empty, out string? coneDescription);
 
         <div class="col-md-6 col-lg-4">
-            <div class="card shadow-sm h-100">
+            <div class="card product-card h-100">
                 @if (!string.IsNullOrWhiteSpace(coneImage))
                 {
                     <img src="@coneImage"
@@ -172,9 +173,11 @@
                     <p class="card-text mt-auto">
                         Цена: <strong>@product.Price.ToString("C")</strong>
                     </p>
-                    <span class="badge bg-secondary">Фунийка</span>
+                    <span class="badge product-badge product-badge-cone">Фунийка</span>
                 </div>
             </div>
         </div>
     }
 </div>
+
+</section>

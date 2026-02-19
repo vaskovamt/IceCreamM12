@@ -233,16 +233,17 @@ public class WorkerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Load(InventoryManagementViewModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> Load(InventoryManagementViewModel model)
     {
         await ExecuteWithTempDataAsync(async () =>
             await _inventoryService.LoadInventoryAsync(
                 model.Load.ProductId,
-                null,
+                model.Load.IngredientId,
                 model.Load.Quantity,
                 model.Load.Reason,
                 User.FindFirstValue(ClaimTypes.NameIdentifier),
-                cancellationToken));
+                CancellationToken.None
+                ));
         return RedirectToAction(nameof(Inventory));
     }
 

@@ -46,7 +46,7 @@ public class InventoryOperationInputModel
 
     public int? IngredientId { get; set; }
 
-    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+    [Range(typeof(decimal), "0,01", "79228162514264337593543950335")]
     public decimal Quantity { get; set; }
 
     [Required(ErrorMessage = "Причината е задължителна.")]
@@ -69,7 +69,7 @@ public class InventoryReplaceInputModel
 
     public int? ToIngredientId { get; set; }
 
-    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+    [Range(typeof(decimal), "0,1", "79228162514264337593543950335")]
     public decimal Quantity { get; set; }
 
     [Required(ErrorMessage = "Причината е задължителна.")]

@@ -187,18 +187,33 @@ public class OwnerController : Controller
     public async Task<IActionResult> CreateProduct(CancellationToken cancellationToken)
     {
         await LoadCategoriesAsync(cancellationToken);
-        return View("Products/Create", new Product());
+        return View("Products/Create", new ProductCreateViewModel());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateProduct(Product product, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateProduct(ProductCreateViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
             await LoadCategoriesAsync(cancellationToken);
-            return View("Products/Create", product);
+            return View("Products/Create", model);
         }
+
+        var product = new Product
+        {
+            Name = model.Name,
+            Description = model.Description,
+            Price = model.Price,
+            CategoryId = model.CategoryId,
+            InventoryItem = new InventoryItem
+            {
+                QuantityOnHand = model.QuantityOnHand,
+                ReorderLevel = 0,
+                StorageLocation = "Main Freezer",
+                LastUpdatedAt = DateTime.UtcNow
+            }
+        };
 
         await _managementService.CreateProductAsync(product, cancellationToken);
         TempData["Success"] = "Продуктът е създаден успешно.";

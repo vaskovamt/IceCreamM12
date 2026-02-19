@@ -14,8 +14,8 @@
   <div class="col-md-3"><div class="card"><div class="card-body"><h6>Последни одити</h6><h3>@Model.Data.RecentAudits.Count</h3></div></div></div>
 </div>
 <div class="row g-3 mb-4">
-  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Стойност чакащи поръчки</h6><h3>@Model.Data.PendingOrdersAmount.ToString("N2") лв.</h3></div></div></div>
-  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Стойност одобрени поръчки</h6><h3>@Model.Data.ApprovedOrdersAmount.ToString("N2") лв.</h3></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Стойност чакащи поръчки</h6><h3>@Model.Data.PendingOrdersAmount.ToString("N2") €</h3></div></div></div>
+  <div class="col-md-6"><div class="card"><div class="card-body"><h6>Стойност одобрени поръчки</h6><h3>@Model.Data.ApprovedOrdersAmount.ToString("N2") €</h3></div></div></div>
 </div>
 <h4>Последни поръчки</h4>
 <table class="table table-sm table-hover">
@@ -28,7 +28,7 @@
       <td>@order.CustomerName</td>
       <td>@order.OrderedAt.ToLocalTime()</td>
       <td>@order.Status</td>
-      <td>@order.TotalAmount.ToString("N2") лв.</td>
+      <td>@order.TotalAmount.ToString("N2") €</td>
       <td>@order.Items.Sum(i => i.Quantity)</td>
     </tr>
   }

@@ -187,12 +187,12 @@ public class OwnerController : Controller
     public async Task<IActionResult> CreateProduct(CancellationToken cancellationToken)
     {
         await LoadCategoriesAsync(cancellationToken);
-        return View("Products/Create", new ProductCreateViewModel());
+        return View("Products/Create", new ProductEditViewModel());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateProduct(ProductCreateViewModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateProduct(ProductEditViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {

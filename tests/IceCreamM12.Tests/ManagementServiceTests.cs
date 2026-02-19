@@ -1,7 +1,9 @@
 using IceCreamM12.Application.Interfaces;
 using IceCreamM12.Domain.Entities;
+using IceCreamM12.Domain.Identity;
 using IceCreamM12.Infrastructure.Data;
 using IceCreamM12.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 
@@ -76,7 +78,6 @@ public class ManagementServiceTests
             service.ExecuteDailyCheckAsync(new Dictionary<int, int> { [product.Id] = -1 }, new Dictionary<int, decimal>(), "u1", CancellationToken.None));
     }
 
-
     [Fact]
     public async Task ExecuteDailyCheckAsync_ReconcilesIngredients()
     {
@@ -148,6 +149,44 @@ public class ManagementServiceTests
                 CancellationToken.None));
     }
 
+    [Fact]
+    public async Task PromoteToWorkerAsync_RemovesClientRoleWhenPresent()
+    {
+        var dbName = $"promote-worker-{Guid.NewGuid()}";
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        await using var context = new ApplicationDbContext(options);
+        var user = new ApplicationUser { Id = "u1", UserName = "user1" };
+        var userManager = new FakeUserManager(user, ["Client"]);
+        var service = new ManagementService(context, new CapturingAuditService(), userManager);
+
+        await service.PromoteToWorkerAsync(user.Id, CancellationToken.None);
+
+        Assert.Contains("Worker", userManager.Roles);
+        Assert.DoesNotContain("Client", userManager.Roles);
+    }
+
+    [Fact]
+    public async Task DemoteToClientAsync_RemovesWorkerRoleWhenPresent()
+    {
+        var dbName = $"demote-client-{Guid.NewGuid()}";
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(dbName)
+            .Options;
+
+        await using var context = new ApplicationDbContext(options);
+        var user = new ApplicationUser { Id = "u2", UserName = "user2" };
+        var userManager = new FakeUserManager(user, ["Worker"]);
+        var service = new ManagementService(context, new CapturingAuditService(), userManager);
+
+        await service.DemoteToClientAsync(user.Id, CancellationToken.None);
+
+        Assert.Contains("Client", userManager.Roles);
+        Assert.DoesNotContain("Worker", userManager.Roles);
+    }
+
     private sealed class CapturingAuditService : IAuditService
     {
         public List<(int QuantityChange, string Reason)> Calls { get; } = [];
@@ -157,5 +196,80 @@ public class ManagementServiceTests
             Calls.Add((quantityChange, reason));
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeUserManager : UserManager<ApplicationUser>
+    {
+        private readonly ApplicationUser _user;
+
+        public HashSet<string> Roles { get; }
+
+        public FakeUserManager(ApplicationUser user, IEnumerable<string> roles)
+            : base(new FakeUserStore(), null, null, null, null, null, null, null, null)
+        {
+            _user = user;
+            Roles = roles.ToHashSet(StringComparer.Ordinal);
+        }
+
+        public override Task<ApplicationUser?> FindByIdAsync(string userId)
+            => Task.FromResult<ApplicationUser?>(_user.Id == userId ? _user : null);
+
+        public override Task<IList<string>> GetRolesAsync(ApplicationUser user)
+            => Task.FromResult<IList<string>>(Roles.ToList());
+
+        public override Task<IdentityResult> AddToRoleAsync(ApplicationUser user, string role)
+        {
+            Roles.Add(role);
+            return Task.FromResult(IdentityResult.Success);
+        }
+
+        public override Task<IdentityResult> RemoveFromRoleAsync(ApplicationUser user, string role)
+        {
+            Roles.Remove(role);
+            return Task.FromResult(IdentityResult.Success);
+        }
+    }
+
+    private sealed class FakeUserStore : IUserStore<ApplicationUser>
+    {
+        public void Dispose()
+        {
+        }
+
+        public Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
+            => Task.FromResult(user.Id);
+
+        public Task<string?> GetUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
+            => Task.FromResult(user.UserName);
+
+        public Task SetUserNameAsync(ApplicationUser user, string? userName, CancellationToken cancellationToken)
+        {
+            user.UserName = userName;
+            return Task.CompletedTask;
+        }
+
+        public Task<string?> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
+            => Task.FromResult(user.NormalizedUserName);
+
+        public Task SetNormalizedUserNameAsync(ApplicationUser user, string? normalizedName, CancellationToken cancellationToken)
+        {
+            user.NormalizedUserName = normalizedName;
+            return Task.CompletedTask;
+        }
+
+        public Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
+            => Task.FromResult(IdentityResult.Success);
+
+        public Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
+            => Task.FromResult(IdentityResult.Success);
+
+        public Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
+            => Task.FromResult(IdentityResult.Success);
+
+        public Task<ApplicationUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+            => Task.FromResult<ApplicationUser?>(null);
+
+        public Task<ApplicationUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+            => Task.FromResult<ApplicationUser?>(null);
     }
 }
